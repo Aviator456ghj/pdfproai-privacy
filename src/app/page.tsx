@@ -13,6 +13,9 @@ import { StatsBanner } from '@/components/landing/stats-banner';
 import { CTASection } from '@/components/landing/cta-section';
 import { Testimonials } from '@/components/landing/testimonials';
 import { AdModal } from '@/components/ads/ad-modal';
+import { LandingInterstitialAd } from '@/components/ads/landing-interstitial-ad';
+import { SectionAdBanner } from '@/components/ads/section-ad-banner';
+import { StickyAdBar } from '@/components/ads/sticky-ad-bar';
 import { lazy, Suspense, useCallback } from 'react';
 
 // Lazy load tool components for performance
@@ -107,7 +110,7 @@ function ToolRenderer({ toolId }: { toolId: string }) {
         <p className="text-muted-foreground max-w-md">
           This tool is currently under development. Check back soon or try one of our other available tools.
         </p>
-        </div>
+      </div>
     );
   }
 
@@ -123,10 +126,16 @@ function LandingPage() {
     >
       <Hero />
       <StatsBanner />
+      {/* Ad placement: between Stats and Tools Grid */}
+      <SectionAdBanner variant="compact" />
       <ToolsGrid />
       <Testimonials />
+      {/* Ad placement: between Testimonials and Features */}
+      <SectionAdBanner variant="full" />
       <Features />
       <Pricing />
+      {/* Ad placement: between Pricing and FAQ */}
+      <SectionAdBanner variant="compact" />
       <FAQ />
       <CTASection />
     </motion.div>
@@ -205,6 +214,9 @@ function ViewRouter() {
 
   return (
     <>
+      {/* Centralized: Landing interstitial ad (shows 3s after page load for free users) */}
+      <LandingInterstitialAd />
+
       <AnimatePresence mode="wait">
         <motion.div
           key={key}
@@ -226,6 +238,9 @@ function ViewRouter() {
           />
         )}
       </AnimatePresence>
+
+      {/* Centralized: Sticky bottom ad bar (appears after scrolling) */}
+      <StickyAdBar />
     </>
   );
 }
