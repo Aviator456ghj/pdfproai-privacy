@@ -11,6 +11,7 @@ import { Pricing } from '@/components/landing/pricing';
 import { FAQ } from '@/components/landing/faq';
 import { StatsBanner } from '@/components/landing/stats-banner';
 import { CTASection } from '@/components/landing/cta-section';
+import { Testimonials } from '@/components/landing/testimonials';
 import { lazy, Suspense } from 'react';
 
 // Lazy load tool components for performance
@@ -36,6 +37,16 @@ const AddSignature = lazy(() => import('@/components/tools/add-signature').then(
 const HighlightPdf = lazy(() => import('@/components/tools/highlight-pdf').then(m => ({ default: m.HighlightPdf })));
 const AnnotatePdf = lazy(() => import('@/components/tools/annotate-pdf').then(m => ({ default: m.AnnotatePdf })));
 const WordToPdf = lazy(() => import('@/components/tools/word-to-pdf').then(m => ({ default: m.WordToPdf })));
+const RemovePassword = lazy(() => import('@/components/tools/remove-password').then(m => ({ default: m.RemovePassword })));
+const EncryptPdf = lazy(() => import('@/components/tools/encrypt-pdf').then(m => ({ default: m.EncryptPdf })));
+const FillForms = lazy(() => import('@/components/tools/fill-forms').then(m => ({ default: m.FillForms })));
+const ScanToPdf = lazy(() => import('@/components/tools/scan-to-pdf').then(m => ({ default: m.ScanToPdf })));
+const ImageToText = lazy(() => import('@/components/tools/image-to-text').then(m => ({ default: m.ImageToText })));
+const AiRewrite = lazy(() => import('@/components/tools/ai-rewrite').then(m => ({ default: m.AiRewrite })));
+const AiExtractTables = lazy(() => import('@/components/tools/ai-extract-tables').then(m => ({ default: m.AiExtractTables })));
+const PermissionControl = lazy(() => import('@/components/tools/permission-control').then(m => ({ default: m.PermissionControl })));
+const AiKeyPoints = lazy(() => import('@/components/tools/ai-key-points').then(m => ({ default: m.AiKeyPoints })));
+const EditImages = lazy(() => import('@/components/tools/edit-images').then(m => ({ default: m.EditImages })));
 
 function ToolLoading() {
   return (
@@ -70,24 +81,32 @@ function ToolRenderer({ toolId }: { toolId: string }) {
     'highlight': <HighlightPdf />,
     'annotate': <AnnotatePdf />,
     'word-to-pdf': <WordToPdf />,
+    'remove-password': <RemovePassword />,
+    'encrypt': <EncryptPdf />,
+    'fill-forms': <FillForms />,
+    'scan-to-pdf': <ScanToPdf />,
+    'image-to-text': <ImageToText />,
+    'ai-rewrite': <AiRewrite />,
+    'ai-extract-tables': <AiExtractTables />,
+    'permission-control': <PermissionControl />,
+    'ai-key-points': <AiKeyPoints />,
+    'edit-images': <EditImages />,
   };
 
   const content = toolMap[toolId];
   if (!content) {
     return (
-      <ToolLayout>
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="h-16 w-16 rounded-2xl bg-muted flex items-center justify-center mb-4">
-            <svg className="h-8 w-8 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-            </svg>
-          </div>
-          <h2 className="text-xl font-semibold mb-2">Tool Coming Soon</h2>
-          <p className="text-muted-foreground max-w-md">
-            This tool is currently under development. Check back soon or try one of our other {100}+ available tools.
-          </p>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-20 flex flex-col items-center justify-center text-center">
+        <div className="h-16 w-16 rounded-2xl bg-muted flex items-center justify-center mb-4">
+          <svg className="h-8 w-8 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+          </svg>
         </div>
-      </ToolLayout>
+        <h2 className="text-xl font-semibold mb-2">Tool Coming Soon</h2>
+        <p className="text-muted-foreground max-w-md">
+          This tool is currently under development. Check back soon or try one of our other available tools.
+        </p>
+        </div>
     );
   }
 
@@ -104,6 +123,7 @@ function LandingPage() {
       <Hero />
       <StatsBanner />
       <ToolsGrid />
+      <Testimonials />
       <Features />
       <Pricing />
       <FAQ />

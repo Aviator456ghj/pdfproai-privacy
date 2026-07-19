@@ -61,7 +61,7 @@ export function ExtractText() {
   };
 
   return (
-    <ToolLayout toolId="extract-pages">
+    <ToolLayout toolId="extract-text">
       <div className="space-y-6">
         {!file ? (
           <FileUploader accept=".pdf" multiple={false} maxFiles={1} />

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Check, Sparkles } from 'lucide-react';
+import { Check, X, Sparkles, ShieldCheck, BadgeDollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
@@ -38,6 +38,7 @@ interface Plan {
   badgeVariant?: 'default' | 'secondary' | 'outline';
   popular?: boolean;
   cta: string;
+  ctaVariant: 'default' | 'outline';
 }
 
 const plans: Plan[] = [
@@ -46,19 +47,18 @@ const plans: Plan[] = [
     description: 'Perfect for occasional PDF tasks',
     monthlyPrice: 0,
     yearlyPrice: 0,
-    badge: 'Current Plan',
-    badgeVariant: 'outline',
-    cta: 'Get Started Free',
+    cta: 'Get Started',
+    ctaVariant: 'outline',
   },
   {
     name: 'Premium',
     description: 'For power users and professionals',
     monthlyPrice: 9.99,
     yearlyPrice: 7.99,
-    badge: 'Most Popular',
-    badgeVariant: 'default',
+    badge: 'MOST POPULAR',
     popular: true,
     cta: 'Upgrade to Premium',
+    ctaVariant: 'default',
   },
   {
     name: 'Business',
@@ -66,6 +66,7 @@ const plans: Plan[] = [
     monthlyPrice: 29.99,
     yearlyPrice: 24.99,
     cta: 'Contact Sales',
+    ctaVariant: 'outline',
   },
 ];
 
@@ -87,9 +88,17 @@ function CheckMark({ value }: { value: boolean | string }) {
     return <span className="text-sm font-medium text-foreground">{value}</span>;
   }
   if (value) {
-    return <Check className="size-4 text-emerald-600" />;
+    return (
+      <div className="flex size-5 items-center justify-center rounded-full bg-emerald-100">
+        <Check className="size-3 text-emerald-600" strokeWidth={3} />
+      </div>
+    );
   }
-  return <span className="text-sm text-muted-foreground">—</span>;
+  return (
+    <div className="flex size-5 items-center justify-center rounded-full bg-slate-100">
+      <X className="size-3 text-slate-400" strokeWidth={3} />
+    </div>
+  );
 }
 
 export function Pricing() {
@@ -110,35 +119,41 @@ export function Pricing() {
             Simple, Transparent Pricing
           </h2>
           <p className="mt-3 text-muted-foreground max-w-xl mx-auto">
-            Start free, upgrade when you need more power. No hidden fees.
+            Start free, upgrade when you need more power. No hidden fees, cancel anytime.
           </p>
 
-          {/* Billing toggle */}
-          <div className="mt-8 inline-flex items-center gap-3 rounded-full border border-slate-200 bg-white px-4 py-2 shadow-sm">
-            <span
-              className={`text-sm font-medium transition-colors ${
-                !isYearly ? 'text-foreground' : 'text-muted-foreground'
+          {/* Billing toggle — polished pill design */}
+          <div className="mt-8 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50/80 px-1.5 py-1.5 shadow-sm backdrop-blur-sm">
+            <button
+              onClick={() => setIsYearly(false)}
+              className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 ${
+                !isYearly
+                  ? 'bg-white text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               Monthly
-            </span>
+            </button>
             <Switch
               checked={isYearly}
               onCheckedChange={setIsYearly}
-              className="data-[state=checked]:bg-emerald-600"
+              className="data-[state=checked]:bg-emerald-600 scale-90"
             />
-            <span
-              className={`text-sm font-medium transition-colors ${
-                isYearly ? 'text-foreground' : 'text-muted-foreground'
+            <button
+              onClick={() => setIsYearly(true)}
+              className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 flex items-center gap-1.5 ${
+                isYearly
+                  ? 'bg-white text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               Yearly
-            </span>
-            {isYearly && (
-              <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 text-xs">
-                Save 20%
-              </Badge>
-            )}
+              {isYearly && (
+                <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 text-[10px] px-1.5 py-0 h-5">
+                  -20%
+                </Badge>
+              )}
+            </button>
           </div>
         </motion.div>
 
@@ -148,7 +163,7 @@ export function Pricing() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: '-60px' }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-5xl mx-auto"
+          className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6 items-start max-w-5xl mx-auto"
         >
           {plans.map((plan) => {
             const price = isYearly ? plan.yearlyPrice : plan.monthlyPrice;
@@ -160,23 +175,22 @@ export function Pricing() {
                 variants={cardVariants}
                 whileHover={{ y: -4 }}
                 transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                className={`relative flex flex-col rounded-2xl border p-6 lg:p-8 shadow-sm transition-shadow hover:shadow-lg ${
+                className={`relative flex flex-col rounded-2xl border p-6 lg:p-8 transition-all duration-200 ${
                   isPopular
-                    ? 'border-emerald-300 bg-white ring-2 ring-emerald-500/20'
-                    : 'border-slate-200/80 bg-white'
+                    ? 'border-transparent bg-white md:scale-105 md:z-10 shadow-xl shadow-emerald-500/10'
+                    : 'border-slate-200/80 bg-white shadow-sm hover:shadow-lg'
                 }`}
               >
+                {/* Gradient border for popular card */}
+                {isPopular && (
+                  <div className="pointer-events-none absolute -inset-[2px] rounded-2xl bg-gradient-to-br from-emerald-400 via-teal-400 to-emerald-500 -z-10" />
+                )}
+
                 {/* Badge */}
                 {plan.badge && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <Badge
-                      variant={plan.badgeVariant}
-                      className={`px-3 py-1 text-xs font-semibold ${
-                        isPopular
-                          ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-0 shadow-md'
-                          : ''
-                      }`}
-                    >
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
+                    <Badge className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-0 shadow-md shadow-emerald-500/25 px-4 py-1 text-[11px] font-bold tracking-wide uppercase">
+                      <Sparkles className="size-3 mr-1" />
                       {plan.badge}
                     </Badge>
                   </div>
@@ -207,10 +221,12 @@ export function Pricing() {
 
                 {/* CTA */}
                 <Button
-                  className={`mt-8 w-full ${
+                  className={`mt-8 w-full font-semibold transition-all duration-200 ${
                     isPopular
-                      ? 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-md shadow-emerald-500/25'
-                      : ''
+                      ? 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-500/30'
+                      : plan.ctaVariant === 'outline'
+                        ? 'hover:bg-slate-50 hover:border-slate-300'
+                        : ''
                   }`}
                   variant={isPopular ? 'default' : 'outline'}
                   size="lg"
@@ -222,16 +238,16 @@ export function Pricing() {
                 <div className="mt-6 border-t border-slate-100" />
 
                 {/* Features list */}
-                <ul className="mt-6 flex-1 space-y-3">
+                <ul className="mt-5 flex-1 space-y-3">
                   {planFeatures.map((feature) => {
                     const value =
                       plan.name === 'Free'
                         ? feature.free
                         : plan.name === 'Premium'
-                        ? feature.premium
-                        : feature.business;
+                          ? feature.premium
+                          : feature.business;
 
-                    // Show "No ads" as a positive
+                    // "Advertisements" inverted — having ads is negative
                     const isPositive = feature.label === 'Advertisements' ? !value : value;
 
                     return (
@@ -258,6 +274,22 @@ export function Pricing() {
               </motion.div>
             );
           })}
+        </motion.div>
+
+        {/* Money-back guarantee badge */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.4, delay: 0.4 }}
+          className="mt-10 flex justify-center"
+        >
+          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200/80 bg-emerald-50/60 px-5 py-2.5 text-sm text-emerald-700">
+            <ShieldCheck className="size-4" />
+            <span className="font-medium">30-day money-back guarantee</span>
+            <span className="text-emerald-500">·</span>
+            <span className="text-emerald-600">No questions asked</span>
+          </div>
         </motion.div>
 
         {/* Feature comparison table (mobile-friendly) */}
