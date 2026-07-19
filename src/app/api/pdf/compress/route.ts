@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { PDFDocument } from 'pdf-lib';
+import { addFreeWatermark, shouldApplyWatermark } from '@/lib/pdf-watermark';
 
 export async function POST(request: Request) {
   try {
@@ -56,9 +57,14 @@ export async function POST(request: Request) {
         saveOptions.useObjectStreams = true;
     }
 
-    const compressedBytes = await pdfDoc.save(saveOptions);
+    let compressedBytes = await pdfDoc.save(saveOptions);
     const compressedSize = compressedBytes.byteLength;
     const reduction = Math.max(0, ((originalSize - compressedSize) / originalSize) * 100);
+
+    const applyWatermark = shouldApplyWatermark(request);
+    if (applyWatermark) {
+      compressedBytes = await addFreeWatermark(compressedBytes);
+    }
 
     return new NextResponse(compressedBytes, {
       status: 200,
@@ -68,6 +74,7 @@ export async function POST(request: Request) {
         'X-Original-Size': String(originalSize),
         'X-Compressed-Size': String(compressedSize),
         'X-Reduction-Percent': reduction.toFixed(2),
+        'X-Watermarked': applyWatermark ? 'true' : 'false',
       },
     });
   } catch (error) {

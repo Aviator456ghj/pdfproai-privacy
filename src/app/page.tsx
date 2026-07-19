@@ -12,7 +12,8 @@ import { FAQ } from '@/components/landing/faq';
 import { StatsBanner } from '@/components/landing/stats-banner';
 import { CTASection } from '@/components/landing/cta-section';
 import { Testimonials } from '@/components/landing/testimonials';
-import { lazy, Suspense } from 'react';
+import { AdModal } from '@/components/ads/ad-modal';
+import { lazy, Suspense, useCallback } from 'react';
 
 // Lazy load tool components for performance
 const MergePdf = lazy(() => import('@/components/tools/merge-pdf').then(m => ({ default: m.MergePdf })));
@@ -160,6 +161,8 @@ function PricingPage() {
 
 function ViewRouter() {
   const { view, activeToolId } = useAppStore();
+  const ad = useAppStore((s) => s.ad);
+  const setView = useAppStore((s) => s.setView);
 
   let content: React.ReactNode = null;
   let key = view;
@@ -182,18 +185,48 @@ function ViewRouter() {
     content = <PricingPage />;
   }
 
+  // Pre-tool ad gate: called after user watches the pre-ad
+  const handlePreAdComplete = useCallback(() => {
+    const pendingToolId = useAppStore.getState().ad.pendingToolId;
+    if (pendingToolId) {
+      setView('tool');
+      // Manually set the active tool since setView clears it
+      useAppStore.setState({
+        activeToolId: pendingToolId,
+        ad: {
+          ...useAppStore.getState().ad,
+          showPreAd: false,
+          preAdCompleted: true,
+          pendingToolId: null,
+        },
+      });
+    }
+  }, [setView]);
+
   return (
-    <AnimatePresence mode="wait">
-      <motion.div
-        key={key}
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.2 }}
-      >
-        {content}
-      </motion.div>
-    </AnimatePresence>
+    <>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={key}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          {content}
+        </motion.div>
+      </AnimatePresence>
+
+      {/* Pre-tool ad modal */}
+      <AnimatePresence>
+        {ad.showPreAd && (
+          <AdModal
+            type="pre"
+            onComplete={handlePreAdComplete}
+          />
+        )}
+      </AnimatePresence>
+    </>
   );
 }
 

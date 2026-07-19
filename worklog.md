@@ -66,4 +66,38 @@ PDFPro AI is a comprehensive, visually polished AI-powered PDF platform with 52+
 5. **Hero background animations**: CSS keyframes for floating elements and mesh gradients may not be visible in all browsers.
 6. **Performance**: With 32 lazy-loaded tool components, initial JS bundle could be optimized further.
 7. **Back-to-top button**: Missing for the long landing page.
-8. **Mobile hamburger menu**: Test and polish mobile navigation experience.
+8. **Mobile hamburger menu**: Test and polish mobile navigation experience.---
+Task ID: ad-wall-system
+Agent: Main Agent
+Task: Implement complete ad-wall monetization system for PDFPro AI free tier
+
+Work Log:
+- Read and analyzed current project state from worklog.md, store.ts, tools.ts, page.tsx, tool-layout.tsx
+- Updated Zustand store (src/lib/store.ts) with user tier system (free/premium/business) and ad state management
+- Created AdModal component (src/components/ads/ad-modal.tsx) - full-screen overlay with 8s countdown, skip after 5s, rotating ad content pool, premium CTAs
+- Created PostToolAdGate component (src/components/ads/post-tool-ad-gate.tsx) - shows after tool completion with "Watch Ad to Remove Watermark" or "Download with Watermark" options
+- Created PDF watermark utility (src/lib/pdf-watermark.ts) - adds "PDFPro AI Free" diagonal watermark + footer text using pdf-lib
+- Created useToolAd hook (src/lib/use-tool-ad.ts) - helper for tools to pass X-User-Tier headers
+- Updated page.tsx ViewRouter to show pre-tool ad modal when free users click any tool
+- Updated tool-layout.tsx with Free tier notice banner and "Go Premium" upgrade CTA
+- Updated header.tsx with tier indicator (Free/Premium badge), clickable toggle, and dynamic Get Premium/Premium Active button
+- Updated merge-pdf.tsx as reference implementation showing full PostToolAdGate integration
+- Updated ALL 8 PDF API routes (merge, split, rotate, compress, page-numbers, extract-pages, delete-pages, rearrange) with watermark support via X-User-Tier header
+- Verified via agent-browser + VLM: pre-ad wall modal appears when clicking Merge PDF as free user
+
+Stage Summary:
+- Complete ad-wall system implemented with 3 touchpoints:
+  1. PRE-TOOL AD: Full-screen modal with countdown timer, skip button after 5s, premium upgrade CTA
+  2. POST-TOOL AD: Watermark notice with "Watch Ad to Remove Watermark" option after output generated
+  3. PDF WATERMARK: "PDFPro AI Free" diagonal watermark on all PDF outputs for free users
+- User tier system with Free/Premium/Business tiers, switchable from header for demo
+- All 8 PDF output API routes support conditional watermarking via X-User-Tier header
+- 0 lint errors, production build passes
+- VLM verified: pre-ad wall modal renders correctly with sponsored content, countdown, skip button, and upgrade CTAs
+
+### Unresolved / Next Phase:
+- Only merge-pdf.tsx has the full PostToolAdGate integration; other 31 tool components need the same pattern
+- Ad content is simulated (random premium upgrade ads); real ad network integration needed
+- User tier is client-side only (Zustand state); needs real auth/backend persistence
+- Post-tool ad flow end-to-end test (actual file processing → watermark → remove via ad) not yet tested
+- Dark mode styling of ad modal not yet verified

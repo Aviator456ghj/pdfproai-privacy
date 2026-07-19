@@ -24,7 +24,9 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ToolLayout } from './tool-layout';
 import { FileUploader } from './file-uploader';
+import { PostToolAdGate } from '@/components/ads/post-tool-ad-gate';
 import { useAppStore } from '@/lib/store';
+import { useToolAd } from '@/lib/use-tool-ad';
 import { toast } from 'sonner';
 import { formatFileSize } from './file-uploader';
 
@@ -93,8 +95,11 @@ function SortableFileItem({
 
 export function MergePdf() {
   const { uploadedFiles, setUploadedFiles, removeUploadedFile, addUploadedFiles, isProcessing, setIsProcessing, clearUploadedFiles } = useAppStore();
+  const { isFree, getFetchOptions } = useToolAd();
   const [showUploader, setShowUploader] = useState(true);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const [cleanDownloadUrl, setCleanDownloadUrl] = useState<string | null>(null);
+  const [hasOutput, setHasOutput] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -121,21 +126,25 @@ export function MergePdf() {
 
     setIsProcessing(true);
     setDownloadUrl(null);
+    setCleanDownloadUrl(null);
+    setHasOutput(false);
 
     try {
       const formData = new FormData();
       uploadedFiles.forEach((file) => formData.append('files', file));
 
-      const response = await fetch('/api/pdf/merge', {
+      // Pass user tier header so API can watermark for free users
+      const response = await fetch('/api/pdf/merge', getFetchOptions({
         method: 'POST',
         body: formData,
-      });
+      }));
 
       if (!response.ok) throw new Error('Merge failed');
 
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
+      setHasOutput(true);
       toast.success('PDFs merged successfully!');
     } catch {
       toast.error('Failed to merge PDFs. Please try again.');
@@ -144,14 +153,59 @@ export function MergePdf() {
     }
   };
 
-  const handleDownload = () => {
+  const handleDownloadWithWatermark = () => {
     if (!downloadUrl) return;
     const a = document.createElement('a');
     a.href = downloadUrl;
-    a.download = 'merged.pdf';
+    a.download = 'merged-watermarked.pdf';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+    toast.info('Downloaded with watermark (Free version)');
+  };
+
+  const handleDownloadWithoutWatermark = async () => {
+    // Re-fetch without watermark (passed premium header temporarily)
+    if (isFree) {
+      // Free user already watched ad — fetch clean version
+      try {
+        const formData = new FormData();
+        uploadedFiles.forEach((file) => formData.append('files', file));
+
+        const response = await fetch('/api/pdf/merge', {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'X-User-Tier': 'premium', // temporary override after watching ad
+          },
+        });
+
+        if (!response.ok) throw new Error('Failed');
+
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        setCleanDownloadUrl(url);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'merged.pdf';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        toast.success('Downloaded without watermark!');
+      } catch {
+        // Fallback to original
+        handleDownloadWithWatermark();
+      }
+    } else {
+      // Premium user — direct download
+      if (!downloadUrl) return;
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = 'merged.pdf';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
   };
 
   const handleAddMore = () => {
@@ -160,113 +214,122 @@ export function MergePdf() {
 
   return (
     <ToolLayout toolId="merge">
-      <div className="space-y-6">
-        {showUploader && uploadedFiles.length === 0 ? (
-          <FileUploader accept=".pdf" multiple maxFiles={20} />
-        ) : null}
+      <PostToolAdGate
+        hasOutput={hasOutput}
+        onDownloadWithWatermark={handleDownloadWithWatermark}
+        onDownloadWithoutWatermark={handleDownloadWithoutWatermark}
+        fileName="merged.pdf"
+      >
+        <div className="space-y-6">
+          {showUploader && uploadedFiles.length === 0 ? (
+            <FileUploader accept=".pdf" multiple maxFiles={20} />
+          ) : null}
 
-        {uploadedFiles.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-4"
-          >
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-foreground">
-                {uploadedFiles.length} file{uploadedFiles.length !== 1 ? 's' : ''} selected
-              </h3>
-              {showUploader ? null : (
+          {uploadedFiles.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-4"
+            >
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-foreground">
+                  {uploadedFiles.length} file{uploadedFiles.length !== 1 ? 's' : ''} selected
+                </h3>
+                {showUploader ? null : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleAddMore}
+                    className="gap-1.5 text-emerald-600 border-emerald-200 hover:bg-emerald-50"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    Add More
+                  </Button>
+                )}
+              </div>
+
+              {showUploader && uploadedFiles.length > 0 && (
+                <FileUploader accept=".pdf" multiple maxFiles={20 - uploadedFiles.length} />
+              )}
+
+              <p className="text-xs text-muted-foreground">
+                Drag and drop to reorder files. They will be merged in the order shown.
+              </p>
+
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={uploadedFiles.map((_, i) => i)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
+                    <AnimatePresence mode="popLayout">
+                      {uploadedFiles.map((file, index) => (
+                        <SortableFileItem
+                          key={`${file.name}-${index}`}
+                          file={file}
+                          index={index}
+                          onRemove={() => removeUploadedFile(index)}
+                        />
+                      ))}
+                    </AnimatePresence>
+                  </div>
+                </SortableContext>
+              </DndContext>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                {!downloadUrl ? (
+                  <Button
+                    onClick={handleMerge}
+                    disabled={isProcessing || uploadedFiles.length < 2}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto"
+                    size="lg"
+                  >
+                    {isProcessing ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Merging PDFs...
+                      </>
+                    ) : (
+                      <>
+                        <FileText className="mr-2 h-4 w-4" />
+                        Merge {uploadedFiles.length} PDFs
+                      </>
+                    )}
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={isFree ? handleDownloadWithWatermark : handleDownloadWithoutWatermark}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto"
+                    size="lg"
+                  >
+                    <Download className="mr-2 h-4 w-4" />
+                    Download Merged PDF
+                  </Button>
+                )}
+
                 <Button
                   variant="outline"
-                  size="sm"
-                  onClick={handleAddMore}
-                  className="gap-1.5 text-emerald-600 border-emerald-200 hover:bg-emerald-50"
+                  onClick={() => {
+                    clearUploadedFiles();
+                    setDownloadUrl(null);
+                    setCleanDownloadUrl(null);
+                    setHasOutput(false);
+                    setShowUploader(true);
+                  }}
+                  className="w-full sm:w-auto"
                 >
-                  <Plus className="h-3.5 w-3.5" />
-                  Add More
+                  Start Over
                 </Button>
-              )}
-            </div>
-
-            {showUploader && uploadedFiles.length > 0 && (
-              <FileUploader accept=".pdf" multiple maxFiles={20 - uploadedFiles.length} />
-            )}
-
-            <p className="text-xs text-muted-foreground">
-              Drag and drop to reorder files. They will be merged in the order shown.
-            </p>
-
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
-            >
-              <SortableContext
-                items={uploadedFiles.map((_, i) => i)}
-                strategy={verticalListSortingStrategy}
-              >
-                <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
-                  <AnimatePresence mode="popLayout">
-                    {uploadedFiles.map((file, index) => (
-                      <SortableFileItem
-                        key={`${file.name}-${index}`}
-                        file={file}
-                        index={index}
-                        onRemove={() => removeUploadedFile(index)}
-                      />
-                    ))}
-                  </AnimatePresence>
-                </div>
-              </SortableContext>
-            </DndContext>
-
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 pt-2">
-              {!downloadUrl ? (
-                <Button
-                  onClick={handleMerge}
-                  disabled={isProcessing || uploadedFiles.length < 2}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto"
-                  size="lg"
-                >
-                  {isProcessing ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Merging PDFs...
-                    </>
-                  ) : (
-                    <>
-                      <FileText className="mr-2 h-4 w-4" />
-                      Merge {uploadedFiles.length} PDFs
-                    </>
-                  )}
-                </Button>
-              ) : (
-                <Button
-                  onClick={handleDownload}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto"
-                  size="lg"
-                >
-                  <Download className="mr-2 h-4 w-4" />
-                  Download Merged PDF
-                </Button>
-              )}
-
-              <Button
-                variant="outline"
-                onClick={() => {
-                  clearUploadedFiles();
-                  setDownloadUrl(null);
-                  setShowUploader(true);
-                }}
-                className="w-full sm:w-auto"
-              >
-                Start Over
-              </Button>
-            </div>
-          </motion.div>
-        )}
-      </div>
+              </div>
+            </motion.div>
+          )}
+        </div>
+      </PostToolAdGate>
     </ToolLayout>
   );
 }

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { PDFDocument } from 'pdf-lib';
+import { addFreeWatermark, shouldApplyWatermark } from '@/lib/pdf-watermark';
 
 function parsePageNumbers(pageStr: string, maxPage: number): number[] {
   const pages = new Set<number>();
@@ -62,7 +63,12 @@ export async function POST(request: Request) {
     const copiedPages = await newPdf.copyPages(sourcePdf, pageIndices);
     copiedPages.forEach((page) => newPdf.addPage(page));
 
-    const extractedBytes = await newPdf.save();
+    let extractedBytes = await newPdf.save();
+
+    const applyWatermark = shouldApplyWatermark(request);
+    if (applyWatermark) {
+      extractedBytes = await addFreeWatermark(extractedBytes);
+    }
 
     return new NextResponse(extractedBytes, {
       status: 200,
@@ -70,6 +76,7 @@ export async function POST(request: Request) {
         'Content-Type': 'application/pdf',
         'Content-Disposition': 'attachment; filename="extracted-pages.pdf"',
         'X-Extracted-Count': String(pageIndices.length),
+        'X-Watermarked': applyWatermark ? 'true' : 'false',
       },
     });
   } catch (error) {

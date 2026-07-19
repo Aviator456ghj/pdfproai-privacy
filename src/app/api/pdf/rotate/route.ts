@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { PDFDocument, degrees } from 'pdf-lib';
+import { addFreeWatermark, shouldApplyWatermark } from '@/lib/pdf-watermark';
 
 function parsePageRange(rangeStr: string, maxPage: number): number[] {
   const pages = new Set<number>();
@@ -72,7 +73,12 @@ export async function POST(request: Request) {
       page.setRotation(degrees(currentRotation + angle));
     }
 
-    const rotatedBytes = await pdfDoc.save();
+    let rotatedBytes = await pdfDoc.save();
+
+    const applyWatermark = shouldApplyWatermark(request);
+    if (applyWatermark) {
+      rotatedBytes = await addFreeWatermark(rotatedBytes);
+    }
 
     return new NextResponse(rotatedBytes, {
       status: 200,
@@ -80,6 +86,7 @@ export async function POST(request: Request) {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="rotated-${angle}deg.pdf"`,
         'X-Rotated-Pages': String(targetPages.length),
+        'X-Watermarked': applyWatermark ? 'true' : 'false',
       },
     });
   } catch (error) {

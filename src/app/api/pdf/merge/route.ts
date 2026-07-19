@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server';
 import { PDFDocument } from 'pdf-lib';
+import { addFreeWatermark, shouldApplyWatermark } from '@/lib/pdf-watermark';
 
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
     const files = formData.getAll('files');
+    const applyWatermark = shouldApplyWatermark(request);
 
     if (!files || files.length < 2) {
       return NextResponse.json(
@@ -36,7 +38,13 @@ export async function POST(request: Request) {
       copiedPages.forEach((page) => mergedPdf.addPage(page));
     }
 
-    const mergedBytes = await mergedPdf.save();
+    let mergedBytes = await mergedPdf.save();
+
+    // Apply watermark for free-tier users
+    if (applyWatermark) {
+      mergedBytes = await addFreeWatermark(mergedBytes);
+    }
+
     const totalPageCount = mergedPdf.getPageCount();
 
     return new NextResponse(mergedBytes, {
@@ -45,6 +53,7 @@ export async function POST(request: Request) {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="merged-${totalPageCount}-pages.pdf"`,
         'X-Page-Count': String(totalPageCount),
+        'X-Watermarked': applyWatermark ? 'true' : 'false',
       },
     });
   } catch (error) {

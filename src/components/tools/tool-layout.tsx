@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, ChevronRight, Home } from 'lucide-react';
+import { ArrowLeft, ChevronRight, Home, Crown, Eye, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -27,6 +27,8 @@ interface ToolLayoutProps {
 export function ToolLayout({ toolId, children }: ToolLayoutProps) {
   const goHome = useAppStore((s) => s.goHome);
   const clearUploadedFiles = useAppStore((s) => s.clearUploadedFiles);
+  const userTier = useAppStore((s) => s.userTier);
+  const setUserTier = useAppStore((s) => s.setUserTier);
   const tool = getToolById(toolId);
   const relatedTools = getRelatedTools(toolId);
   const category = tool ? getCategoryById(tool.category) : undefined;
@@ -40,6 +42,7 @@ export function ToolLayout({ toolId, children }: ToolLayoutProps) {
   }
 
   const Icon = tool.icon;
+  const isFree = userTier === 'free';
 
   const handleGoHome = () => {
     clearUploadedFiles();
@@ -111,7 +114,7 @@ export function ToolLayout({ toolId, children }: ToolLayoutProps) {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="mb-8"
+        className="mb-6"
       >
         <div className="flex items-start gap-4">
           <div
@@ -122,7 +125,7 @@ export function ToolLayout({ toolId, children }: ToolLayoutProps) {
           >
             <Icon className={cn('h-6 w-6', category?.color ?? 'text-emerald-600')} />
           </div>
-          <div className="space-y-1.5">
+          <div className="space-y-1.5 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
                 {tool.name}
@@ -149,6 +152,39 @@ export function ToolLayout({ toolId, children }: ToolLayoutProps) {
           </div>
         </div>
       </motion.div>
+
+      {/* Free Tier Notice Banner */}
+      {isFree && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          transition={{ delay: 0.25, duration: 0.3 }}
+          className="mb-6"
+        >
+          <div className="flex items-center justify-between gap-3 rounded-xl bg-gradient-to-r from-slate-100 to-slate-50 dark:from-slate-800/80 dark:to-slate-900/80 border border-slate-200 dark:border-slate-700 px-4 py-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                <Tag className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-foreground">
+                  Free Version
+                </p>
+                <p className="text-xs text-muted-foreground truncate">
+                  Outputs include watermark • Ads support free access
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setUserTier('premium')}
+              className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-semibold px-3 py-1.5 rounded-lg hover:from-amber-600 hover:to-orange-600 transition-all shrink-0 shadow-sm"
+            >
+              <Crown className="h-3.5 w-3.5" />
+              Go Premium
+            </button>
+          </div>
+        </motion.div>
+      )}
 
       <Separator className="mb-8" />
 

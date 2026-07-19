@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { PDFDocument } from 'pdf-lib';
+import { addFreeWatermark, shouldApplyWatermark } from '@/lib/pdf-watermark';
 
 function parsePageRange(rangeStr: string, maxPage: number): number[] {
   const pages = new Set<number>();
@@ -112,7 +113,12 @@ export async function POST(request: Request) {
     const copiedPages = await newPdf.copyPages(sourcePdf, firstGroup);
     copiedPages.forEach((page) => newPdf.addPage(page));
 
-    const pdfBytes = await newPdf.save();
+    let pdfBytes = await newPdf.save();
+
+    const applyWatermark = shouldApplyWatermark(request);
+    if (applyWatermark) {
+      pdfBytes = await addFreeWatermark(pdfBytes);
+    }
 
     return new NextResponse(pdfBytes, {
       status: 200,
@@ -121,6 +127,7 @@ export async function POST(request: Request) {
         'Content-Disposition': 'attachment; filename="split-part-1.pdf"',
         'X-Total-Splits': String(splitGroups.length),
         'X-Part-Index': '0',
+        'X-Watermarked': applyWatermark ? 'true' : 'false',
       },
     });
   } catch (error) {

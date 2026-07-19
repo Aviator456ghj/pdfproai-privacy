@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import { addFreeWatermark, shouldApplyWatermark } from '@/lib/pdf-watermark';
 
 type Position =
   | 'bottom_center'
@@ -107,13 +108,19 @@ export async function POST(request: Request) {
       });
     });
 
-    const numberedBytes = await pdfDoc.save();
+    let numberedBytes = await pdfDoc.save();
+
+    const applyWatermark = shouldApplyWatermark(request);
+    if (applyWatermark) {
+      numberedBytes = await addFreeWatermark(numberedBytes);
+    }
 
     return new NextResponse(numberedBytes, {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': 'attachment; filename="with-page-numbers.pdf"',
+        'X-Watermarked': applyWatermark ? 'true' : 'false',
       },
     });
   } catch (error) {

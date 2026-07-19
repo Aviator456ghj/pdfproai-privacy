@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Search, Sparkles, ChevronDown, Moon, Sun } from 'lucide-react';
+import { Menu, X, Search, Sparkles, ChevronDown, Moon, Sun, Crown, Tag } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { useAppStore } from '@/lib/store';
@@ -13,7 +13,7 @@ export function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchVal, setSearchVal] = useState('');
   const { theme, setTheme } = useTheme();
-  const { goHome, openTool, openCategory, setSearchQuery } = useAppStore();
+  const { goHome, openTool, openCategory, setSearchQuery, userTier, setUserTier } = useAppStore();
 
   const filteredTools = searchVal.length > 1
     ? getAllTools().filter(t =>
@@ -153,15 +153,48 @@ export function Header() {
               </AnimatePresence>
             </div>
 
+            {/* Tier indicator + toggle (for demo) */}
+            <button
+              onClick={() => setUserTier(userTier === 'free' ? 'premium' : 'free')}
+              className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all hover:bg-muted/50"
+              title={`Current: ${userTier} tier. Click to switch.`}
+            >
+              {userTier === 'free' ? (
+                <>
+                  <Tag className="h-3.5 w-3.5 text-blue-500" />
+                  <span className="text-blue-600 dark:text-blue-400">Free</span>
+                </>
+              ) : (
+                <>
+                  <Crown className="h-3.5 w-3.5 text-amber-500" />
+                  <span className="text-amber-600 dark:text-amber-400">Premium</span>
+                </>
+              )}
+            </button>
+
             <Button variant="ghost" size="sm" className="hidden sm:flex">
               Log In
             </Button>
-            <Button
-              size="sm"
-              className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all"
-            >
-              Get Premium
-            </Button>
+            {userTier === 'free' ? (
+              <Button
+                size="sm"
+                onClick={() => setUserTier('premium')}
+                className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all"
+              >
+                <Crown className="mr-1.5 h-3.5 w-3.5" />
+                Get Premium
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setUserTier('free')}
+                className="text-amber-600 border-amber-200 hover:bg-amber-50"
+              >
+                <Crown className="mr-1.5 h-3.5 w-3.5" />
+                Premium Active
+              </Button>
+            )}
 
             <Button
               variant="ghost"

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { PDFDocument } from 'pdf-lib';
+import { addFreeWatermark, shouldApplyWatermark } from '@/lib/pdf-watermark';
 
 function parsePageNumbers(pageStr: string, maxPage: number): number[] {
   const pages = new Set<number>();
@@ -73,7 +74,12 @@ export async function POST(request: Request) {
     const copiedPages = await newPdf.copyPages(sourcePdf, keepIndices);
     copiedPages.forEach((page) => newPdf.addPage(page));
 
-    const resultBytes = await newPdf.save();
+    let resultBytes = await newPdf.save();
+
+    const applyWatermark = shouldApplyWatermark(request);
+    if (applyWatermark) {
+      resultBytes = await addFreeWatermark(resultBytes);
+    }
 
     return new NextResponse(resultBytes, {
       status: 200,
@@ -82,6 +88,7 @@ export async function POST(request: Request) {
         'Content-Disposition': 'attachment; filename="pages-deleted.pdf"',
         'X-Remaining-Pages': String(newPdf.getPageCount()),
         'X-Deleted-Count': String(pagesToDelete.size),
+        'X-Watermarked': applyWatermark ? 'true' : 'false',
       },
     });
   } catch (error) {

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { PDFDocument } from 'pdf-lib';
+import { addFreeWatermark, shouldApplyWatermark } from '@/lib/pdf-watermark';
 
 export async function POST(request: Request) {
   try {
@@ -52,7 +53,12 @@ export async function POST(request: Request) {
     const copiedPages = await newPdf.copyPages(sourcePdf, zeroBasedOrder);
     copiedPages.forEach((page) => newPdf.addPage(page));
 
-    const rearrangedBytes = await newPdf.save();
+    let rearrangedBytes = await newPdf.save();
+
+    const applyWatermark = shouldApplyWatermark(request);
+    if (applyWatermark) {
+      rearrangedBytes = await addFreeWatermark(rearrangedBytes);
+    }
 
     return new NextResponse(rearrangedBytes, {
       status: 200,
@@ -60,6 +66,7 @@ export async function POST(request: Request) {
         'Content-Type': 'application/pdf',
         'Content-Disposition': 'attachment; filename="rearranged.pdf"',
         'X-Page-Count': String(newPdf.getPageCount()),
+        'X-Watermarked': applyWatermark ? 'true' : 'false',
       },
     });
   } catch (error) {
