@@ -17,7 +17,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { ToolLayout } from './tool-layout';
 import { FileUploader } from './file-uploader';
+import { PostToolAdGate } from '@/components/ads/post-tool-ad-gate';
 import { useAppStore } from '@/lib/store';
+import { useToolAd } from '@/lib/use-tool-ad';
 import { toast } from 'sonner';
 
 interface TextBlock {
@@ -30,11 +32,13 @@ interface TextBlock {
 
 export function EditText() {
   const { uploadedFiles, isProcessing, setIsProcessing, clearUploadedFiles } = useAppStore();
+  const { isFree, getFetchOptions } = useToolAd();
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [textBlocks, setTextBlocks] = useState<TextBlock[]>([]);
   const [selectedBlock, setSelectedBlock] = useState<string | null>(null);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const [hasOutput, setHasOutput] = useState(false);
 
   const file = uploadedFiles[0];
 
@@ -82,16 +86,17 @@ export function EditText() {
       formData.append('file', file);
       formData.append('changes', JSON.stringify(textBlocks));
 
-      const response = await fetch('/api/pdf/edit-text', {
+      const response = await fetch('/api/pdf/edit-text', getFetchOptions({
         method: 'POST',
         body: formData,
-      });
+      }));
 
       if (!response.ok) throw new Error('Edit failed');
 
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
+      setHasOutput(true);
       toast.success('Text edits saved successfully!');
     } catch {
       toast.error('Failed to save edits. Please try again.');
@@ -100,19 +105,66 @@ export function EditText() {
     }
   };
 
-  const handleDownload = () => {
+  const handleDownloadWithWatermark = () => {
     if (!downloadUrl || !file) return;
     const a = document.createElement('a');
     a.href = downloadUrl;
-    a.download = file.name.replace('.pdf', '-edited.pdf');
+    a.download = file.name.replace('.pdf', '-edited-watermarked.pdf');
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+    toast.info('Downloaded with watermark (Free version)');
+  };
+
+  const handleDownloadWithoutWatermark = async () => {
+    if (isFree) {
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('changes', JSON.stringify(textBlocks));
+
+        const response = await fetch('/api/pdf/edit-text', {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'X-User-Tier': 'premium',
+          },
+        });
+
+        if (!response.ok) throw new Error('Failed');
+
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = file.name.replace('.pdf', '-edited.pdf');
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        toast.success('Downloaded without watermark!');
+      } catch {
+        handleDownloadWithWatermark();
+      }
+    } else {
+      if (!downloadUrl || !file) return;
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = file.name.replace('.pdf', '-edited.pdf');
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
   };
 
   return (
     <ToolLayout toolId="edit-text">
-      <div className="space-y-6">
+      <PostToolAdGate
+        hasOutput={hasOutput}
+        onDownloadWithWatermark={handleDownloadWithWatermark}
+        onDownloadWithoutWatermark={handleDownloadWithoutWatermark}
+        fileName="output.pdf"
+      >
+        <div className="space-y-6">
         {!file ? (
           <FileUploader accept=".pdf" multiple={false} maxFiles={1} />
         ) : (
@@ -163,6 +215,7 @@ export function EditText() {
                     clearUploadedFiles();
                     setTextBlocks([]);
                     setDownloadUrl(null);
+                    setHasOutput(false);
                   }}
                 >
                   Change
@@ -231,7 +284,7 @@ export function EditText() {
                 </Button>
               ) : (
                 <Button
-                  onClick={handleDownload}
+                  onClick={isFree ? handleDownloadWithWatermark : handleDownloadWithoutWatermark}
                   className="bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto"
                   size="lg"
                 >
@@ -242,7 +295,7 @@ export function EditText() {
 
               <Button
                 variant="outline"
-                onClick={() => { handleFileLoaded(); setDownloadUrl(null); }}
+                onClick={() => { handleFileLoaded(); setDownloadUrl(null); setHasOutput(false); }}
                 className="w-full sm:w-auto"
               >
                 Reset Edits
@@ -251,6 +304,7 @@ export function EditText() {
           </motion.div>
         )}
       </div>
+      </PostToolAdGate>
     </ToolLayout>
   );
 }

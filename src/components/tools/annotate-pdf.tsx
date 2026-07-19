@@ -25,7 +25,9 @@ import { Slider } from '@/components/ui/slider';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ToolLayout } from './tool-layout';
 import { FileUploader } from './file-uploader';
+import { PostToolAdGate } from '@/components/ads/post-tool-ad-gate';
 import { useAppStore } from '@/lib/store';
+import { useToolAd } from '@/lib/use-tool-ad';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -66,6 +68,7 @@ const typeOptions: {
 
 export function AnnotatePdf() {
   const { uploadedFiles, isProcessing, setIsProcessing, clearUploadedFiles } = useAppStore();
+  const { isFree, getFetchOptions } = useToolAd();
   const [annotations, setAnnotations] = useState<Annotation[]>([]);
   const [selectedType, setSelectedType] = useState<AnnotationType>('comment');
   const [content, setContent] = useState('');
@@ -73,6 +76,7 @@ export function AnnotatePdf() {
   const [strokeWidth, setStrokeWidth] = useState(2);
   const [currentPage, setCurrentPage] = useState(1);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const [hasOutput, setHasOutput] = useState(false);
 
   const file = uploadedFiles[0];
   const currentTypeOption = typeOptions.find((t) => t.value === selectedType)!;
@@ -118,16 +122,17 @@ export function AnnotatePdf() {
       formData.append('file', file);
       formData.append('annotations', JSON.stringify(annotations));
 
-      const response = await fetch('/api/pdf/annotate', {
+      const response = await fetch('/api/pdf/annotate', getFetchOptions({
         method: 'POST',
         body: formData,
-      });
+      }));
 
       if (!response.ok) throw new Error('Export failed');
 
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
+      setHasOutput(true);
       toast.success('Annotated PDF exported!');
     } catch {
       toast.error('Failed to export PDF. Please try again.');
@@ -136,18 +141,65 @@ export function AnnotatePdf() {
     }
   };
 
-  const handleDownload = () => {
+  const handleDownloadWithWatermark = () => {
     if (!downloadUrl || !file) return;
     const a = document.createElement('a');
     a.href = downloadUrl;
-    a.download = file.name.replace('.pdf', '-annotated.pdf');
+    a.download = file.name.replace('.pdf', '-annotated-watermarked.pdf');
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+    toast.info('Downloaded with watermark (Free version)');
+  };
+
+  const handleDownloadWithoutWatermark = async () => {
+    if (isFree) {
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('annotations', JSON.stringify(annotations));
+
+        const response = await fetch('/api/pdf/annotate', {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'X-User-Tier': 'premium',
+          },
+        });
+
+        if (!response.ok) throw new Error('Failed');
+
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = file.name.replace('.pdf', '-annotated.pdf');
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        toast.success('Downloaded without watermark!');
+      } catch {
+        handleDownloadWithWatermark();
+      }
+    } else {
+      if (!downloadUrl || !file) return;
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = file.name.replace('.pdf', '-annotated.pdf');
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
   };
 
   return (
     <ToolLayout toolId="annotate">
+      <PostToolAdGate
+        hasOutput={hasOutput}
+        onDownloadWithWatermark={handleDownloadWithWatermark}
+        onDownloadWithoutWatermark={handleDownloadWithoutWatermark}
+        fileName="output.pdf"
+      >
       <div className="space-y-6">
         {!file ? (
           <FileUploader accept=".pdf" multiple={false} maxFiles={1} />
@@ -195,6 +247,7 @@ export function AnnotatePdf() {
                     clearUploadedFiles();
                     setAnnotations([]);
                     setDownloadUrl(null);
+                    setHasOutput(false);
                   }}
                 >
                   Change
@@ -386,7 +439,7 @@ export function AnnotatePdf() {
                 </Button>
               ) : (
                 <Button
-                  onClick={handleDownload}
+                  onClick={isFree ? handleDownloadWithWatermark : handleDownloadWithoutWatermark}
                   className="bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto"
                   size="lg"
                 >
@@ -401,6 +454,7 @@ export function AnnotatePdf() {
                   clearUploadedFiles();
                   setAnnotations([]);
                   setDownloadUrl(null);
+                  setHasOutput(false);
                 }}
                 className="w-full sm:w-auto"
               >
@@ -410,6 +464,7 @@ export function AnnotatePdf() {
           </motion.div>
         )}
       </div>
+      </PostToolAdGate>
     </ToolLayout>
   );
 }

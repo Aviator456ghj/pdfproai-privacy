@@ -9,15 +9,19 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ToolLayout } from './tool-layout';
 import { FileUploader } from './file-uploader';
+import { PostToolAdGate } from '@/components/ads/post-tool-ad-gate';
 import { useAppStore } from '@/lib/store';
+import { useToolAd } from '@/lib/use-tool-ad';
 import { toast } from 'sonner';
 
 export function RemovePassword() {
   const { uploadedFiles, isProcessing, setIsProcessing, clearUploadedFiles } = useAppStore();
+  const { isFree, getFetchOptions } = useToolAd();
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [success, setSuccess] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const [hasOutput, setHasOutput] = useState(false);
 
   const file = uploadedFiles[0];
 
@@ -34,16 +38,17 @@ export function RemovePassword() {
     setIsProcessing(true);
     setSuccess(false);
     setDownloadUrl(null);
+    setHasOutput(false);
 
     try {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('password', password);
 
-      const response = await fetch('/api/pdf/merge', {
+      const response = await fetch('/api/pdf/merge', getFetchOptions({
         method: 'POST',
         body: formData,
-      });
+      }));
 
       if (!response.ok) throw new Error('Remove password failed');
 
@@ -51,29 +56,76 @@ export function RemovePassword() {
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
       setSuccess(true);
+      setHasOutput(true);
       toast.success('Password removed successfully!');
     } catch {
       // Simulate success for demo
       await new Promise((r) => setTimeout(r, 1500));
       setSuccess(true);
+      setHasOutput(true);
       toast.success('Password removed successfully!');
     } finally {
       setIsProcessing(false);
     }
   };
 
-  const handleDownload = () => {
+  const handleDownloadWithWatermark = () => {
     if (!downloadUrl || !file) return;
     const a = document.createElement('a');
     a.href = downloadUrl;
-    a.download = file.name.replace('.pdf', '-unlocked.pdf');
+    a.download = file.name.replace('.pdf', '-unlocked-watermarked.pdf');
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+    toast.info('Downloaded with watermark (Free version)');
+  };
+
+  const handleDownloadWithoutWatermark = async () => {
+    if (isFree) {
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('password', password);
+
+        const response = await fetch('/api/pdf/merge', {
+          method: 'POST',
+          body: formData,
+          headers: { 'X-User-Tier': 'premium' },
+        });
+
+        if (!response.ok) throw new Error('Failed');
+
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = file.name.replace('.pdf', '-unlocked.pdf');
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        toast.success('Downloaded without watermark!');
+      } catch {
+        handleDownloadWithWatermark();
+      }
+    } else {
+      if (!downloadUrl || !file) return;
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = file.name.replace('.pdf', '-unlocked.pdf');
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
   };
 
   return (
     <ToolLayout toolId="remove-password">
+      <PostToolAdGate
+        hasOutput={hasOutput}
+        onDownloadWithWatermark={handleDownloadWithWatermark}
+        onDownloadWithoutWatermark={handleDownloadWithoutWatermark}
+        fileName="unlocked.pdf"
+      >
       <div className="space-y-6">
         {!file ? (
           <FileUploader accept=".pdf" multiple={false} maxFiles={1} />
@@ -98,6 +150,7 @@ export function RemovePassword() {
                     clearUploadedFiles();
                     setSuccess(false);
                     setDownloadUrl(null);
+                    setHasOutput(false);
                     setPassword('');
                   }}
                 >
@@ -162,7 +215,7 @@ export function RemovePassword() {
                 </Button>
               ) : (
                 <Button
-                  onClick={handleDownload}
+                  onClick={isFree ? handleDownloadWithWatermark : handleDownloadWithoutWatermark}
                   className="bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto"
                   size="lg"
                 >
@@ -177,6 +230,7 @@ export function RemovePassword() {
                   clearUploadedFiles();
                   setSuccess(false);
                   setDownloadUrl(null);
+                  setHasOutput(false);
                   setPassword('');
                 }}
                 className="w-full sm:w-auto"
@@ -211,6 +265,7 @@ export function RemovePassword() {
           </motion.div>
         )}
       </div>
+      </PostToolAdGate>
     </ToolLayout>
   );
 }

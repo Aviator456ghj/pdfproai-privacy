@@ -8,13 +8,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { ToolLayout } from './tool-layout';
 import { FileUploader } from './file-uploader';
+import { PostToolAdGate } from '@/components/ads/post-tool-ad-gate';
 import { useAppStore } from '@/lib/store';
+import { useToolAd } from '@/lib/use-tool-ad';
 import { toast } from 'sonner';
 
 export function ImageToText() {
   const { uploadedFiles, isProcessing, setIsProcessing, clearUploadedFiles } = useAppStore();
+  const { isFree, getFetchOptions } = useToolAd();
   const [extractedText, setExtractedText] = useState('');
   const [copied, setCopied] = useState(false);
+  const [hasOutput, setHasOutput] = useState(false);
 
   const file = uploadedFiles[0];
 
@@ -26,12 +30,14 @@ export function ImageToText() {
 
     setIsProcessing(true);
     setExtractedText('');
+    setHasOutput(false);
 
     try {
       await new Promise((r) => setTimeout(r, 2000));
       setExtractedText(
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\n\nDuis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n\nCurabitur pretium tincidunt lacus. Nulla gravida orci a odio. Nullam varius, turpis et commodo pharetra, est eros bibendum elit, nec luctus magna felis sollicitudin mauris.'
       );
+      setHasOutput(true);
       toast.success('Text extracted successfully!');
     } catch {
       toast.error('Failed to extract text. Please try again.');
@@ -55,10 +61,17 @@ export function ImageToText() {
   const reset = () => {
     clearUploadedFiles();
     setExtractedText('');
+    setHasOutput(false);
   };
 
   return (
     <ToolLayout toolId="image-to-text">
+      <PostToolAdGate
+        hasOutput={hasOutput}
+        onDownloadWithWatermark={() => toast.info('Free version — output includes watermark')}
+        onDownloadWithoutWatermark={() => toast.success('Text downloaded without watermark!')}
+        fileName="ocr-text.txt"
+      >
       <div className="space-y-6">
         {!file ? (
           <FileUploader accept=".jpg,.jpeg,.png,.gif,.bmp,.webp,.tiff" multiple={false} maxFiles={1} />
@@ -150,6 +163,7 @@ export function ImageToText() {
           </motion.div>
         )}
       </div>
+      </PostToolAdGate>
     </ToolLayout>
   );
 }

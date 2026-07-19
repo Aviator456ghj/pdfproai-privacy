@@ -17,7 +17,9 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { ToolLayout } from './tool-layout';
 import { FileUploader } from './file-uploader';
+import { PostToolAdGate } from '@/components/ads/post-tool-ad-gate';
 import { useAppStore } from '@/lib/store';
+import { useToolAd } from '@/lib/use-tool-ad';
 import { toast } from 'sonner';
 
 type SummaryLength = 'short' | 'medium' | 'detailed';
@@ -65,10 +67,12 @@ function SparkleEffect() {
 
 export function AiSummarize() {
   const { uploadedFiles, isProcessing, setIsProcessing, clearUploadedFiles } = useAppStore();
+  const { isFree, getFetchOptions } = useToolAd();
   const [length, setLength] = useState<SummaryLength>('medium');
   const [language, setLanguage] = useState('en');
   const [summary, setSummary] = useState('');
   const [streamingText, setStreamingText] = useState('');
+  const [hasOutput, setHasOutput] = useState(false);
 
   const file = uploadedFiles[0];
 
@@ -88,15 +92,16 @@ export function AiSummarize() {
       formData.append('length', length);
       formData.append('language', language);
 
-      const response = await fetch('/api/ai/summarize', {
+      const response = await fetch('/api/ai/summarize', getFetchOptions({
         method: 'POST',
         body: formData,
-      });
+      }));
 
       if (!response.ok) throw new Error('Summarize failed');
 
       const data = await response.json();
       setSummary(data.summary || '');
+      setHasOutput(true);
       toast.success('Summary generated!');
     } catch {
       // Simulate a summary for demo
@@ -119,6 +124,7 @@ export function AiSummarize() {
           clearInterval(interval);
           setSummary(demoSummary);
           setStreamingText('');
+          setHasOutput(true);
         }
       }, 10);
 
@@ -132,6 +138,12 @@ export function AiSummarize() {
 
   return (
     <ToolLayout toolId="ai-summarize">
+      <PostToolAdGate
+        hasOutput={hasOutput}
+        onDownloadWithWatermark={() => toast.info('Free version — output includes watermark')}
+        onDownloadWithoutWatermark={() => toast.success('Summary copied without watermark!')}
+        fileName="summary.txt"
+      >
       <div className="space-y-6">
         {!file ? (
           <FileUploader accept=".pdf" multiple={false} maxFiles={1} />
@@ -153,7 +165,7 @@ export function AiSummarize() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => { clearUploadedFiles(); setSummary(''); setStreamingText(''); }}
+                  onClick={() => { clearUploadedFiles(); setSummary(''); setStreamingText(''); setHasOutput(false); }}
                 >
                   Change
                 </Button>
@@ -364,6 +376,7 @@ export function AiSummarize() {
           </motion.div>
         )}
       </div>
+      </PostToolAdGate>
     </ToolLayout>
   );
 }

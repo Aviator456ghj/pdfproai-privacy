@@ -10,7 +10,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { ToolLayout } from './tool-layout';
 import { FileUploader } from './file-uploader';
+import { PostToolAdGate } from '@/components/ads/post-tool-ad-gate';
 import { useAppStore } from '@/lib/store';
+import { useToolAd } from '@/lib/use-tool-ad';
 import { toast } from 'sonner';
 
 const simulatedFields = [
@@ -24,6 +26,7 @@ const simulatedFields = [
 
 export function FillForms() {
   const { uploadedFiles, isProcessing, setIsProcessing, clearUploadedFiles } = useAppStore();
+  const { isFree } = useToolAd();
   const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
 
@@ -55,6 +58,14 @@ export function FillForms() {
     }
   };
 
+  const handleDownloadWithWatermark = () => {
+    toast.info('Downloaded with watermark (Free version)');
+  };
+
+  const handleDownloadWithoutWatermark = () => {
+    toast.success('Form downloaded without watermark!');
+  };
+
   const reset = () => {
     clearUploadedFiles();
     setFieldValues({});
@@ -63,6 +74,12 @@ export function FillForms() {
 
   return (
     <ToolLayout toolId="fill-forms">
+      <PostToolAdGate
+        hasOutput={submitted}
+        onDownloadWithWatermark={handleDownloadWithWatermark}
+        onDownloadWithoutWatermark={handleDownloadWithoutWatermark}
+        fileName="output.pdf"
+      >
       <div className="space-y-6">
         {!file ? (
           <FileUploader accept=".pdf" multiple={false} maxFiles={1} />
@@ -187,6 +204,7 @@ export function FillForms() {
           </motion.div>
         )}
       </div>
+      </PostToolAdGate>
     </ToolLayout>
   );
 }

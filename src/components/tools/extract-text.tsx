@@ -8,13 +8,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { ToolLayout } from './tool-layout';
 import { FileUploader } from './file-uploader';
+import { PostToolAdGate } from '@/components/ads/post-tool-ad-gate';
 import { useAppStore } from '@/lib/store';
+import { useToolAd } from '@/lib/use-tool-ad';
 import { toast } from 'sonner';
 
 export function ExtractText() {
   const { uploadedFiles, isProcessing, setIsProcessing, clearUploadedFiles } = useAppStore();
+  const { isFree, getFetchOptions } = useToolAd();
   const [extractedText, setExtractedText] = useState('');
   const [copied, setCopied] = useState(false);
+  const [hasOutput, setHasOutput] = useState(false);
 
   const file = uploadedFiles[0];
 
@@ -26,20 +30,22 @@ export function ExtractText() {
 
     setIsProcessing(true);
     setExtractedText('');
+    setHasOutput(false);
 
     try {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch('/api/pdf/extract-text', {
+      const response = await fetch('/api/pdf/extract-text', getFetchOptions({
         method: 'POST',
         body: formData,
-      });
+      }));
 
       if (!response.ok) throw new Error('Extraction failed');
 
       const data = await response.json();
       setExtractedText(data.text || '');
+      setHasOutput(true);
       toast.success('Text extracted successfully!');
     } catch {
       toast.error('Failed to extract text. Please try again.');
@@ -62,6 +68,12 @@ export function ExtractText() {
 
   return (
     <ToolLayout toolId="extract-text">
+      <PostToolAdGate
+        hasOutput={hasOutput}
+        onDownloadWithWatermark={() => toast.info('Free version — output includes watermark')}
+        onDownloadWithoutWatermark={() => toast.success('Text downloaded without watermark!')}
+        fileName="extracted-text.txt"
+      >
       <div className="space-y-6">
         {!file ? (
           <FileUploader accept=".pdf" multiple={false} maxFiles={1} />
@@ -83,7 +95,7 @@ export function ExtractText() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => { clearUploadedFiles(); setExtractedText(''); }}
+                  onClick={() => { clearUploadedFiles(); setExtractedText(''); setHasOutput(false); }}
                 >
                   Change
                 </Button>
@@ -157,6 +169,7 @@ export function ExtractText() {
           </motion.div>
         )}
       </div>
+      </PostToolAdGate>
     </ToolLayout>
   );
 }

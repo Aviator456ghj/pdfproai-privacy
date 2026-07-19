@@ -23,7 +23,9 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ToolLayout } from './tool-layout';
 import { FileUploader } from './file-uploader';
+import { PostToolAdGate } from '@/components/ads/post-tool-ad-gate';
 import { useAppStore } from '@/lib/store';
+import { useToolAd } from '@/lib/use-tool-ad';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -84,9 +86,11 @@ function SortablePageThumbnail({
 
 export function RearrangePages() {
   const { uploadedFiles, isProcessing, setIsProcessing, clearUploadedFiles } = useAppStore();
+  const { isFree, getFetchOptions } = useToolAd();
   const [pageOrder, setPageOrder] = useState<number[]>([]);
   const [totalPages, setTotalPages] = useState(0);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const [hasOutput, setHasOutput] = useState(false);
 
   const file = uploadedFiles[0];
 
@@ -125,22 +129,24 @@ export function RearrangePages() {
 
     setIsProcessing(true);
     setDownloadUrl(null);
+    setHasOutput(false);
 
     try {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('order', pageOrder.join(','));
 
-      const response = await fetch('/api/pdf/rearrange', {
+      const response = await fetch('/api/pdf/rearrange', getFetchOptions({
         method: 'POST',
         body: formData,
-      });
+      }));
 
       if (!response.ok) throw new Error('Rearrange failed');
 
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
+      setHasOutput(true);
       toast.success('Pages rearranged successfully!');
     } catch {
       toast.error('Failed to rearrange pages. Please try again.');
@@ -149,131 +155,180 @@ export function RearrangePages() {
     }
   };
 
-  const handleDownload = () => {
+  const handleDownloadWithWatermark = () => {
     if (!downloadUrl || !file) return;
     const a = document.createElement('a');
     a.href = downloadUrl;
-    a.download = file.name.replace('.pdf', '-rearranged.pdf');
+    a.download = file.name.replace('.pdf', '-rearranged-watermarked.pdf');
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+    toast.info('Downloaded with watermark (Free version)');
+  };
+
+  const handleDownloadWithoutWatermark = async () => {
+    if (isFree) {
+      try {
+        const formData = new FormData();
+        formData.append('file', file!);
+        formData.append('order', pageOrder.join(','));
+
+        const response = await fetch('/api/pdf/rearrange', {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'X-User-Tier': 'premium',
+          },
+        });
+
+        if (!response.ok) throw new Error('Failed');
+
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = file!.name.replace('.pdf', '-rearranged.pdf');
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        toast.success('Downloaded without watermark!');
+      } catch {
+        handleDownloadWithWatermark();
+      }
+    } else {
+      if (!downloadUrl || !file) return;
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = file.name.replace('.pdf', '-rearranged.pdf');
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
   };
 
   return (
     <ToolLayout toolId="rearrange">
-      <div className="space-y-6">
-        {!file ? (
-          <FileUploader accept=".pdf" multiple={false} maxFiles={1} />
-        ) : (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-6"
-          >
-            {/* Current file */}
-            <Card className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-teal-100 dark:bg-teal-900/30">
-                  <FileText className="h-5 w-5 text-teal-600" />
+      <PostToolAdGate
+        hasOutput={hasOutput}
+        onDownloadWithWatermark={handleDownloadWithWatermark}
+        onDownloadWithoutWatermark={handleDownloadWithoutWatermark}
+        fileName="rearranged.pdf"
+      >
+        <div className="space-y-6">
+          {!file ? (
+            <FileUploader accept=".pdf" multiple={false} maxFiles={1} />
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-6"
+            >
+              {/* Current file */}
+              <Card className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-teal-100 dark:bg-teal-900/30">
+                    <FileText className="h-5 w-5 text-teal-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{file.name}</p>
+                    <p className="text-xs text-muted-foreground">{totalPages} pages</p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      clearUploadedFiles();
+                      setPageOrder([]);
+                      setDownloadUrl(null);
+                      setHasOutput(false);
+                    }}
+                  >
+                    Change
+                  </Button>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{file.name}</p>
-                  <p className="text-xs text-muted-foreground">{totalPages} pages</p>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    clearUploadedFiles();
-                    setPageOrder([]);
-                    setDownloadUrl(null);
-                  }}
+              </Card>
+
+              <p className="text-sm text-muted-foreground">
+                Drag and drop pages to rearrange their order
+              </p>
+
+              {/* Page Grid */}
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={pageOrder.map((_, i) => i)}
                 >
-                  Change
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 max-h-[500px] overflow-y-auto pr-1">
+                    <AnimatePresence mode="popLayout">
+                      {pageOrder.map((page, index) => (
+                        <SortablePageThumbnail
+                          key={`page-${page}-${index}`}
+                          page={page}
+                          index={index}
+                          isOriginal={page === index + 1}
+                        />
+                      ))}
+                    </AnimatePresence>
+                  </div>
+                </SortableContext>
+              </DndContext>
+
+              {/* Order summary */}
+              <Card className="p-3">
+                <p className="text-xs text-muted-foreground font-mono">
+                  Current order: {pageOrder.join(', ')}
+                </p>
+              </Card>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                {!downloadUrl ? (
+                  <Button
+                    onClick={handleApply}
+                    disabled={isProcessing}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto"
+                    size="lg"
+                  >
+                    {isProcessing ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Rearranging...
+                      </>
+                    ) : (
+                      <>
+                        <ArrowUpDown className="mr-2 h-4 w-4" />
+                        Apply New Order
+                      </>
+                    )}
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={isFree ? handleDownloadWithWatermark : handleDownloadWithoutWatermark}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto"
+                    size="lg"
+                  >
+                    <Download className="mr-2 h-4 w-4" />
+                    Download PDF
+                  </Button>
+                )}
+
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setPageOrder(Array.from({ length: totalPages }, (_, i) => i + 1));
+                  }}
+                  className="w-full sm:w-auto"
+                >
+                  Reset Order
                 </Button>
               </div>
-            </Card>
-
-            <p className="text-sm text-muted-foreground">
-              Drag and drop pages to rearrange their order
-            </p>
-
-            {/* Page Grid */}
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
-            >
-              <SortableContext
-                items={pageOrder.map((_, i) => i)}
-              >
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 max-h-[500px] overflow-y-auto pr-1">
-                  <AnimatePresence mode="popLayout">
-                    {pageOrder.map((page, index) => (
-                      <SortablePageThumbnail
-                        key={`page-${page}-${index}`}
-                        page={page}
-                        index={index}
-                        isOriginal={page === index + 1}
-                      />
-                    ))}
-                  </AnimatePresence>
-                </div>
-              </SortableContext>
-            </DndContext>
-
-            {/* Order summary */}
-            <Card className="p-3">
-              <p className="text-xs text-muted-foreground font-mono">
-                Current order: {pageOrder.join(', ')}
-              </p>
-            </Card>
-
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3">
-              {!downloadUrl ? (
-                <Button
-                  onClick={handleApply}
-                  disabled={isProcessing}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto"
-                  size="lg"
-                >
-                  {isProcessing ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Rearranging...
-                    </>
-                  ) : (
-                    <>
-                      <ArrowUpDown className="mr-2 h-4 w-4" />
-                      Apply New Order
-                    </>
-                  )}
-                </Button>
-              ) : (
-                <Button
-                  onClick={handleDownload}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto"
-                  size="lg"
-                >
-                  <Download className="mr-2 h-4 w-4" />
-                  Download PDF
-                </Button>
-              )}
-
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setPageOrder(Array.from({ length: totalPages }, (_, i) => i + 1));
-                }}
-                className="w-full sm:w-auto"
-              >
-                Reset Order
-              </Button>
-            </div>
-          </motion.div>
-        )}
-      </div>
+            </motion.div>
+          )}
+        </div>
+      </PostToolAdGate>
     </ToolLayout>
   );
 }

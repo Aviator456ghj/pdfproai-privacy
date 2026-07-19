@@ -11,7 +11,9 @@ import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
 import { ToolLayout } from './tool-layout';
 import { FileUploader } from './file-uploader';
+import { PostToolAdGate } from '@/components/ads/post-tool-ad-gate';
 import { useAppStore } from '@/lib/store';
+import { useToolAd } from '@/lib/use-tool-ad';
 import { toast } from 'sonner';
 
 interface ImagePreview {
@@ -22,10 +24,12 @@ interface ImagePreview {
 
 export function PdfToImages() {
   const { uploadedFiles, isProcessing, setIsProcessing, clearUploadedFiles } = useAppStore();
+  const { isFree, getFetchOptions } = useToolAd();
   const [format, setFormat] = useState<'png' | 'jpg'>('png');
   const [quality, setQuality] = useState(90);
   const [pageRange, setPageRange] = useState('all');
   const [previews, setPreviews] = useState<ImagePreview[]>([]);
+  const [hasOutput, setHasOutput] = useState(false);
 
   const file = uploadedFiles[0];
 
@@ -37,6 +41,7 @@ export function PdfToImages() {
 
     setIsProcessing(true);
     setPreviews([]);
+    setHasOutput(false);
 
     try {
       const formData = new FormData();
@@ -45,10 +50,10 @@ export function PdfToImages() {
       formData.append('quality', String(quality));
       formData.append('pageRange', pageRange);
 
-      const response = await fetch('/api/pdf/to-images', {
+      const response = await fetch('/api/pdf/to-images', getFetchOptions({
         method: 'POST',
         body: formData,
-      });
+      }));
 
       if (!response.ok) throw new Error('Conversion failed');
 
@@ -60,6 +65,7 @@ export function PdfToImages() {
           page: img.page,
         }))
       );
+      setHasOutput(true);
       toast.success(`Converted ${data.images?.length ?? 0} pages to ${format.toUpperCase()}!`);
     } catch {
       toast.error('Failed to convert PDF. Please try again.');
@@ -90,6 +96,12 @@ export function PdfToImages() {
 
   return (
     <ToolLayout toolId="pdf-to-images">
+      <PostToolAdGate
+        hasOutput={hasOutput}
+        onDownloadWithWatermark={() => { handleDownloadAll(); toast.info('Free version — output includes watermark'); }}
+        onDownloadWithoutWatermark={() => { handleDownloadAll(); toast.success('Downloaded without watermark!'); }}
+        fileName="images.zip"
+      >
       <div className="space-y-6">
         {!file ? (
           <FileUploader accept=".pdf" multiple={false} maxFiles={1} />
@@ -111,7 +123,7 @@ export function PdfToImages() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => { clearUploadedFiles(); setPreviews([]); }}
+                  onClick={() => { clearUploadedFiles(); setPreviews([]); setHasOutput(false); }}
                 >
                   Change
                 </Button>
@@ -261,6 +273,7 @@ export function PdfToImages() {
           </motion.div>
         )}
       </div>
+      </PostToolAdGate>
     </ToolLayout>
   );
 }

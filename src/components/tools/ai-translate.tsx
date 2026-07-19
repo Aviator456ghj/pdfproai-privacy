@@ -16,7 +16,9 @@ import {
 } from '@/components/ui/select';
 import { ToolLayout } from './tool-layout';
 import { FileUploader } from './file-uploader';
+import { PostToolAdGate } from '@/components/ads/post-tool-ad-gate';
 import { useAppStore } from '@/lib/store';
+import { useToolAd } from '@/lib/use-tool-ad';
 import { toast } from 'sonner';
 
 const languages = [
@@ -42,10 +44,12 @@ const targetLanguages = languages.filter((l) => l.value !== 'auto');
 
 export function AiTranslate() {
   const { uploadedFiles, isProcessing, setIsProcessing, clearUploadedFiles } = useAppStore();
+  const { isFree, getFetchOptions } = useToolAd();
   const [sourceLang, setSourceLang] = useState('auto');
   const [targetLang, setTargetLang] = useState('es');
   const [progress, setProgress] = useState(0);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const [hasOutput, setHasOutput] = useState(false);
 
   const file = uploadedFiles[0];
 
@@ -57,6 +61,7 @@ export function AiTranslate() {
 
     setIsProcessing(true);
     setDownloadUrl(null);
+    setHasOutput(false);
     setProgress(0);
 
     // Simulate progress
@@ -73,10 +78,10 @@ export function AiTranslate() {
       formData.append('sourceLang', sourceLang);
       formData.append('targetLang', targetLang);
 
-      const response = await fetch('/api/ai/translate', {
+      const response = await fetch('/api/ai/translate', getFetchOptions({
         method: 'POST',
         body: formData,
-      });
+      }));
 
       clearInterval(progressInterval);
       setProgress(100);
@@ -86,6 +91,7 @@ export function AiTranslate() {
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
+      setHasOutput(true);
       toast.success('PDF translated successfully!');
     } catch {
       clearInterval(progressInterval);
@@ -106,8 +112,24 @@ export function AiTranslate() {
     document.body.removeChild(a);
   };
 
+  const handleDownloadWithWatermark = () => {
+    handleDownload();
+    toast.info('Free version — output includes watermark');
+  };
+
+  const handleDownloadWithoutWatermark = () => {
+    handleDownload();
+    toast.success('Downloaded without watermark!');
+  };
+
   return (
     <ToolLayout toolId="ai-translate">
+      <PostToolAdGate
+        hasOutput={hasOutput}
+        onDownloadWithWatermark={handleDownloadWithWatermark}
+        onDownloadWithoutWatermark={handleDownloadWithoutWatermark}
+        fileName="translated.pdf"
+      >
       <div className="space-y-6">
         {!file ? (
           <FileUploader accept=".pdf" multiple={false} maxFiles={1} />
@@ -129,7 +151,7 @@ export function AiTranslate() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => { clearUploadedFiles(); setDownloadUrl(null); setProgress(0); }}
+                  onClick={() => { clearUploadedFiles(); setDownloadUrl(null); setProgress(0); setHasOutput(false); }}
                 >
                   Change
                 </Button>
@@ -233,7 +255,7 @@ export function AiTranslate() {
 
               <Button
                 variant="outline"
-                onClick={() => { clearUploadedFiles(); setDownloadUrl(null); setProgress(0); }}
+                onClick={() => { clearUploadedFiles(); setDownloadUrl(null); setProgress(0); setHasOutput(false); }}
                 className="w-full sm:w-auto"
               >
                 Start Over
@@ -242,6 +264,7 @@ export function AiTranslate() {
           </motion.div>
         )}
       </div>
+      </PostToolAdGate>
     </ToolLayout>
   );
 }

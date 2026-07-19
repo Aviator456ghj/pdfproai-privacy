@@ -33,7 +33,9 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Slider } from '@/components/ui/slider';
 import { ToolLayout } from './tool-layout';
 import { FileUploader } from './file-uploader';
+import { PostToolAdGate } from '@/components/ads/post-tool-ad-gate';
 import { useAppStore } from '@/lib/store';
+import { useToolAd } from '@/lib/use-tool-ad';
 import { toast } from 'sonner';
 import { formatFileSize } from './file-uploader';
 
@@ -119,10 +121,12 @@ export function ImagesToPdf() {
     clearUploadedFiles,
   } = useAppStore();
 
+  const { isFree, getFetchOptions } = useToolAd();
   const [showUploader, setShowUploader] = useState(true);
   const [pageSize, setPageSize] = useState<PageSize>('a4');
   const [margin, setMargin] = useState(20);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const [hasOutput, setHasOutput] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -149,6 +153,7 @@ export function ImagesToPdf() {
 
     setIsProcessing(true);
     setDownloadUrl(null);
+    setHasOutput(false);
 
     try {
       const formData = new FormData();
@@ -156,16 +161,17 @@ export function ImagesToPdf() {
       formData.append('pageSize', pageSize);
       formData.append('margin', String(margin));
 
-      const response = await fetch('/api/pdf/from-images', {
+      const response = await fetch('/api/pdf/from-images', getFetchOptions({
         method: 'POST',
         body: formData,
-      });
+      }));
 
       if (!response.ok) throw new Error('Conversion failed');
 
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
+      setHasOutput(true);
       toast.success('PDF created successfully!');
     } catch {
       toast.error('Failed to create PDF. Please try again.');
@@ -174,18 +180,64 @@ export function ImagesToPdf() {
     }
   };
 
-  const handleDownload = () => {
+  const handleDownloadWithWatermark = () => {
     if (!downloadUrl) return;
     const a = document.createElement('a');
     a.href = downloadUrl;
-    a.download = 'images.pdf';
+    a.download = 'images-watermarked.pdf';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+    toast.info('Downloaded with watermark (Free version)');
+  };
+
+  const handleDownloadWithoutWatermark = async () => {
+    if (isFree) {
+      try {
+        const formData = new FormData();
+        uploadedFiles.forEach((f) => formData.append('images', f));
+        formData.append('pageSize', pageSize);
+        formData.append('margin', String(margin));
+
+        const response = await fetch('/api/pdf/from-images', {
+          method: 'POST',
+          body: formData,
+          headers: { 'X-User-Tier': 'premium' },
+        });
+
+        if (!response.ok) throw new Error('Failed');
+
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'images.pdf';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        toast.success('Downloaded without watermark!');
+      } catch {
+        handleDownloadWithWatermark();
+      }
+    } else {
+      if (!downloadUrl) return;
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = 'images.pdf';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
   };
 
   return (
     <ToolLayout toolId="images-to-pdf">
+      <PostToolAdGate
+        hasOutput={hasOutput}
+        onDownloadWithWatermark={handleDownloadWithWatermark}
+        onDownloadWithoutWatermark={handleDownloadWithoutWatermark}
+        fileName="images.pdf"
+      >
       <div className="space-y-6">
         {showUploader && uploadedFiles.length === 0 && (
           <FileUploader accept="image/png,image/jpeg,image/webp,image/gif" multiple maxFiles={50} />
@@ -313,7 +365,7 @@ export function ImagesToPdf() {
                 </Button>
               ) : (
                 <Button
-                  onClick={handleDownload}
+                  onClick={isFree ? handleDownloadWithWatermark : handleDownloadWithoutWatermark}
                   className="bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto"
                   size="lg"
                 >
@@ -326,6 +378,7 @@ export function ImagesToPdf() {
                 onClick={() => {
                   clearUploadedFiles();
                   setDownloadUrl(null);
+                  setHasOutput(false);
                   setShowUploader(true);
                 }}
                 className="w-full sm:w-auto"
@@ -336,6 +389,7 @@ export function ImagesToPdf() {
           </motion.div>
         )}
       </div>
+      </PostToolAdGate>
     </ToolLayout>
   );
 }

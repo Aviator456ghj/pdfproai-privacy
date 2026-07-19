@@ -7,7 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ToolLayout } from './tool-layout';
 import { FileUploader } from './file-uploader';
+import { PostToolAdGate } from '@/components/ads/post-tool-ad-gate';
 import { useAppStore } from '@/lib/store';
+import { useToolAd } from '@/lib/use-tool-ad';
 import { toast } from 'sonner';
 
 const demoKeyPoints = [
@@ -51,8 +53,10 @@ function SparkleEffect() {
 
 export function AiKeyPoints() {
   const { uploadedFiles, isProcessing, setIsProcessing, clearUploadedFiles } = useAppStore();
+  const { isFree, getFetchOptions } = useToolAd();
   const [keyPoints, setKeyPoints] = useState<string[]>([]);
   const [copied, setCopied] = useState(false);
+  const [hasOutput, setHasOutput] = useState(false);
 
   const file = uploadedFiles[0];
 
@@ -64,10 +68,12 @@ export function AiKeyPoints() {
 
     setIsProcessing(true);
     setKeyPoints([]);
+    setHasOutput(false);
 
     try {
       await new Promise((r) => setTimeout(r, 2500));
       setKeyPoints(demoKeyPoints);
+      setHasOutput(true);
       toast.success(`${demoKeyPoints.length} key points extracted!`);
     } catch {
       toast.error('Failed to extract key points. Please try again.');
@@ -92,10 +98,17 @@ export function AiKeyPoints() {
   const reset = () => {
     clearUploadedFiles();
     setKeyPoints([]);
+    setHasOutput(false);
   };
 
   return (
     <ToolLayout toolId="ai-key-points">
+      <PostToolAdGate
+        hasOutput={hasOutput}
+        onDownloadWithWatermark={() => toast.info('Free version — output includes watermark')}
+        onDownloadWithoutWatermark={() => toast.success('Key points copied without watermark!')}
+        fileName="key-points.txt"
+      >
       <div className="space-y-6">
         {!file ? (
           <FileUploader accept=".pdf" multiple={false} maxFiles={1} />
@@ -222,6 +235,7 @@ export function AiKeyPoints() {
           </motion.div>
         )}
       </div>
+      </PostToolAdGate>
     </ToolLayout>
   );
 }

@@ -15,7 +15,9 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { ToolLayout } from './tool-layout';
 import { FileUploader } from './file-uploader';
+import { PostToolAdGate } from '@/components/ads/post-tool-ad-gate';
 import { useAppStore } from '@/lib/store';
+import { useToolAd } from '@/lib/use-tool-ad';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -38,6 +40,7 @@ interface HighlightSelection {
 
 export function HighlightPdf() {
   const { uploadedFiles, isProcessing, setIsProcessing, clearUploadedFiles } = useAppStore();
+  const { isFree, getFetchOptions } = useToolAd();
   const [color, setColor] = useState('#FFEB3B');
   const [opacity, setOpacity] = useState(40);
   const [highlights, setHighlights] = useState<HighlightSelection[]>([]);
@@ -45,6 +48,7 @@ export function HighlightPdf() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const [hasOutput, setHasOutput] = useState(false);
 
   const file = uploadedFiles[0];
 
@@ -88,16 +92,17 @@ export function HighlightPdf() {
       formData.append('file', file);
       formData.append('highlights', JSON.stringify(highlights));
 
-      const response = await fetch('/api/pdf/highlight', {
+      const response = await fetch('/api/pdf/highlight', getFetchOptions({
         method: 'POST',
         body: formData,
-      });
+      }));
 
       if (!response.ok) throw new Error('Highlight export failed');
 
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
+      setHasOutput(true);
       toast.success('Highlighted PDF exported!');
     } catch {
       toast.error('Failed to export PDF. Please try again.');
@@ -106,18 +111,65 @@ export function HighlightPdf() {
     }
   };
 
-  const handleDownload = () => {
+  const handleDownloadWithWatermark = () => {
     if (!downloadUrl || !file) return;
     const a = document.createElement('a');
     a.href = downloadUrl;
-    a.download = file.name.replace('.pdf', '-highlighted.pdf');
+    a.download = file.name.replace('.pdf', '-highlighted-watermarked.pdf');
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+    toast.info('Downloaded with watermark (Free version)');
+  };
+
+  const handleDownloadWithoutWatermark = async () => {
+    if (isFree) {
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('highlights', JSON.stringify(highlights));
+
+        const response = await fetch('/api/pdf/highlight', {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'X-User-Tier': 'premium',
+          },
+        });
+
+        if (!response.ok) throw new Error('Failed');
+
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = file.name.replace('.pdf', '-highlighted.pdf');
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        toast.success('Downloaded without watermark!');
+      } catch {
+        handleDownloadWithWatermark();
+      }
+    } else {
+      if (!downloadUrl || !file) return;
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = file.name.replace('.pdf', '-highlighted.pdf');
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
   };
 
   return (
     <ToolLayout toolId="highlight">
+      <PostToolAdGate
+        hasOutput={hasOutput}
+        onDownloadWithWatermark={handleDownloadWithWatermark}
+        onDownloadWithoutWatermark={handleDownloadWithoutWatermark}
+        fileName="output.pdf"
+      >
       <div className="space-y-6">
         {!file ? (
           <FileUploader accept=".pdf" multiple={false} maxFiles={1} />
@@ -143,6 +195,7 @@ export function HighlightPdf() {
                     clearUploadedFiles();
                     setHighlights([]);
                     setDownloadUrl(null);
+                    setHasOutput(false);
                   }}
                 >
                   Change
@@ -285,7 +338,7 @@ export function HighlightPdf() {
                 </Button>
               ) : (
                 <Button
-                  onClick={handleDownload}
+                  onClick={isFree ? handleDownloadWithWatermark : handleDownloadWithoutWatermark}
                   className="bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto"
                   size="lg"
                 >
@@ -300,6 +353,7 @@ export function HighlightPdf() {
                   clearUploadedFiles();
                   setHighlights([]);
                   setDownloadUrl(null);
+                  setHasOutput(false);
                 }}
                 className="w-full sm:w-auto"
               >
@@ -309,6 +363,7 @@ export function HighlightPdf() {
           </motion.div>
         )}
       </div>
+      </PostToolAdGate>
     </ToolLayout>
   );
 }

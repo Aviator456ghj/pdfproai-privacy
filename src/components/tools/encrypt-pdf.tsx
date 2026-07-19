@@ -9,7 +9,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ToolLayout } from './tool-layout';
 import { FileUploader } from './file-uploader';
+import { PostToolAdGate } from '@/components/ads/post-tool-ad-gate';
 import { useAppStore } from '@/lib/store';
+import { useToolAd } from '@/lib/use-tool-ad';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -35,11 +37,13 @@ function getPasswordStrength(password: string): {
 
 export function EncryptPdf() {
   const { uploadedFiles, isProcessing, setIsProcessing, clearUploadedFiles } = useAppStore();
+  const { isFree } = useToolAd();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const [hasOutput, setHasOutput] = useState(false);
 
   const file = uploadedFiles[0];
 
@@ -66,9 +70,11 @@ export function EncryptPdf() {
 
     setIsProcessing(true);
     setDownloadUrl(null);
+    setHasOutput(false);
 
     try {
       await new Promise((r) => setTimeout(r, 2000));
+      setHasOutput(true);
       toast.success('PDF encrypted successfully with AES-256!');
     } catch {
       toast.error('Failed to encrypt PDF. Please try again.');
@@ -77,7 +83,18 @@ export function EncryptPdf() {
     }
   };
 
-  const handleDownload = () => {
+  const handleDownloadWithWatermark = () => {
+    if (!file) return;
+    const a = document.createElement('a');
+    a.href = downloadUrl || '#';
+    a.download = file.name.replace('.pdf', '-encrypted-watermarked.pdf');
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    toast.info('Downloaded with watermark (Free version)');
+  };
+
+  const handleDownloadWithoutWatermark = () => {
     if (!file) return;
     const a = document.createElement('a');
     a.href = downloadUrl || '#';
@@ -89,6 +106,12 @@ export function EncryptPdf() {
 
   return (
     <ToolLayout toolId="encrypt">
+      <PostToolAdGate
+        hasOutput={hasOutput}
+        onDownloadWithWatermark={handleDownloadWithWatermark}
+        onDownloadWithoutWatermark={handleDownloadWithoutWatermark}
+        fileName="encrypted.pdf"
+      >
       <div className="space-y-6">
         {!file ? (
           <FileUploader accept=".pdf" multiple={false} maxFiles={1} />
@@ -112,6 +135,7 @@ export function EncryptPdf() {
                   onClick={() => {
                     clearUploadedFiles();
                     setDownloadUrl(null);
+                    setHasOutput(false);
                     setPassword('');
                     setConfirmPassword('');
                   }}
@@ -229,7 +253,7 @@ export function EncryptPdf() {
                 </Button>
               ) : (
                 <Button
-                  onClick={handleDownload}
+                  onClick={isFree ? handleDownloadWithWatermark : handleDownloadWithoutWatermark}
                   className="bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto"
                   size="lg"
                 >
@@ -243,6 +267,7 @@ export function EncryptPdf() {
                 onClick={() => {
                   clearUploadedFiles();
                   setDownloadUrl(null);
+                  setHasOutput(false);
                   setPassword('');
                   setConfirmPassword('');
                 }}
@@ -254,6 +279,7 @@ export function EncryptPdf() {
           </motion.div>
         )}
       </div>
+      </PostToolAdGate>
     </ToolLayout>
   );
 }

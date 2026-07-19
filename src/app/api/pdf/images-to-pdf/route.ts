@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { PDFDocument } from 'pdf-lib';
 import sharp from 'sharp';
+import { addFreeWatermark, shouldApplyWatermark } from '@/lib/pdf-watermark';
 
 export async function POST(request: Request) {
   try {
@@ -82,7 +83,12 @@ export async function POST(request: Request) {
       });
     }
 
-    const pdfBytes = await pdfDoc.save();
+    let pdfBytes = await pdfDoc.save();
+
+    const applyWatermark = shouldApplyWatermark(request);
+    if (applyWatermark) {
+      pdfBytes = await addFreeWatermark(pdfBytes);
+    }
 
     return new NextResponse(pdfBytes, {
       status: 200,
@@ -90,6 +96,7 @@ export async function POST(request: Request) {
         'Content-Type': 'application/pdf',
         'Content-Disposition': 'attachment; filename="images-to-pdf.pdf"',
         'X-Page-Count': String(pdfDoc.getPageCount()),
+        'X-Watermarked': applyWatermark ? 'true' : 'false',
       },
     });
   } catch (error) {

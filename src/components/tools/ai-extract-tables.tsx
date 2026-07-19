@@ -15,7 +15,9 @@ import {
 } from '@/components/ui/table';
 import { ToolLayout } from './tool-layout';
 import { FileUploader } from './file-uploader';
+import { PostToolAdGate } from '@/components/ads/post-tool-ad-gate';
 import { useAppStore } from '@/lib/store';
+import { useToolAd } from '@/lib/use-tool-ad';
 import { toast } from 'sonner';
 
 const demoTables = [
@@ -73,7 +75,9 @@ function SparkleEffect() {
 
 export function AiExtractTables() {
   const { uploadedFiles, isProcessing, setIsProcessing, clearUploadedFiles } = useAppStore();
+  const { isFree, getFetchOptions } = useToolAd();
   const [tables, setTables] = useState<typeof demoTables>([]);
+  const [hasOutput, setHasOutput] = useState(false);
   const file = uploadedFiles[0];
 
   const handleExtract = async () => {
@@ -84,10 +88,12 @@ export function AiExtractTables() {
 
     setIsProcessing(true);
     setTables([]);
+    setHasOutput(false);
 
     try {
       await new Promise((r) => setTimeout(r, 2500));
       setTables(demoTables);
+      setHasOutput(true);
       toast.success(`${demoTables.length} table(s) extracted successfully!`);
     } catch {
       toast.error('Failed to extract tables. Please try again.');
@@ -115,10 +121,17 @@ export function AiExtractTables() {
   const reset = () => {
     clearUploadedFiles();
     setTables([]);
+    setHasOutput(false);
   };
 
   return (
     <ToolLayout toolId="ai-extract-tables">
+      <PostToolAdGate
+        hasOutput={hasOutput}
+        onDownloadWithWatermark={() => toast.info('Free version — output includes watermark')}
+        onDownloadWithoutWatermark={() => toast.success('Tables downloaded without watermark!')}
+        fileName="tables.csv"
+      >
       <div className="space-y-6">
         {!file ? (
           <FileUploader accept=".pdf" multiple={false} maxFiles={1} />
@@ -253,6 +266,7 @@ export function AiExtractTables() {
           </motion.div>
         )}
       </div>
+      </PostToolAdGate>
     </ToolLayout>
   );
 }

@@ -19,7 +19,9 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { ToolLayout } from './tool-layout';
 import { FileUploader } from './file-uploader';
+import { PostToolAdGate } from '@/components/ads/post-tool-ad-gate';
 import { useAppStore } from '@/lib/store';
+import { useToolAd } from '@/lib/use-tool-ad';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -32,9 +34,11 @@ interface ChatMessage {
 
 export function AiChat() {
   const { uploadedFiles, isProcessing, setIsProcessing, clearUploadedFiles } = useAppStore();
+  const { isFree, getFetchOptions } = useToolAd();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
+  const [hasOutput, setHasOutput] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -72,10 +76,10 @@ export function AiChat() {
       formData.append('message', messageText);
       formData.append('history', JSON.stringify(messages));
 
-      const response = await fetch('/api/ai/chat', {
+      const response = await fetch('/api/ai/chat', getFetchOptions({
         method: 'POST',
         body: formData,
-      });
+      }));
 
       if (!response.ok) throw new Error('Chat failed');
 
@@ -87,6 +91,7 @@ export function AiChat() {
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, assistantMsg]);
+      setHasOutput(true);
     } catch {
       // Simulate response for demo
       const demoResponses = [
@@ -119,6 +124,7 @@ export function AiChat() {
         } else {
           clearInterval(interval);
           setIsStreaming(false);
+          setHasOutput(true);
         }
       }, 50);
     } finally {
@@ -135,6 +141,12 @@ export function AiChat() {
 
   return (
     <ToolLayout toolId="ai-chat">
+      <PostToolAdGate
+        hasOutput={hasOutput}
+        onDownloadWithWatermark={() => toast.info('Free version — output includes watermark')}
+        onDownloadWithoutWatermark={() => toast.success('Chat exported without watermark!')}
+        fileName="chat-export.txt"
+      >
       <div className="space-y-4">
         {!file ? (
           <FileUploader accept=".pdf" multiple={false} maxFiles={1} />
@@ -163,6 +175,7 @@ export function AiChat() {
                   onClick={() => {
                     clearUploadedFiles();
                     setMessages([]);
+                    setHasOutput(false);
                   }}
                   className="text-xs"
                 >
@@ -284,6 +297,7 @@ export function AiChat() {
           </motion.div>
         )}
       </div>
+      </PostToolAdGate>
     </ToolLayout>
   );
 }

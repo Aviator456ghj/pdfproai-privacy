@@ -15,7 +15,9 @@ import {
 } from '@/components/ui/select';
 import { ToolLayout } from './tool-layout';
 import { FileUploader } from './file-uploader';
+import { PostToolAdGate } from '@/components/ads/post-tool-ad-gate';
 import { useAppStore } from '@/lib/store';
+import { useToolAd } from '@/lib/use-tool-ad';
 import { toast } from 'sonner';
 
 const qualityOptions = [
@@ -27,8 +29,10 @@ const qualityOptions = [
 
 export function ScanToPdf() {
   const { uploadedFiles, isProcessing, setIsProcessing, clearUploadedFiles } = useAppStore();
+  const { isFree, getFetchOptions } = useToolAd();
   const [quality, setQuality] = useState('high');
   const [success, setSuccess] = useState(false);
+  const [hasOutput, setHasOutput] = useState(false);
 
   const file = uploadedFiles[0];
 
@@ -40,10 +44,12 @@ export function ScanToPdf() {
 
     setIsProcessing(true);
     setSuccess(false);
+    setHasOutput(false);
 
     try {
       await new Promise((r) => setTimeout(r, 2500));
       setSuccess(true);
+      setHasOutput(true);
       toast.success('Searchable PDF created successfully!');
     } catch {
       toast.error('Failed to create PDF. Please try again.');
@@ -55,10 +61,17 @@ export function ScanToPdf() {
   const reset = () => {
     clearUploadedFiles();
     setSuccess(false);
+    setHasOutput(false);
   };
 
   return (
     <ToolLayout toolId="scan-to-pdf">
+      <PostToolAdGate
+        hasOutput={hasOutput}
+        onDownloadWithWatermark={() => { toast.success('Download started!'); toast.info('Free version — output includes watermark'); }}
+        onDownloadWithoutWatermark={() => toast.success('Downloaded without watermark!')}
+        fileName="scanned.pdf"
+      >
       <div className="space-y-6">
         {!file ? (
           <FileUploader accept=".jpg,.jpeg,.png,.tiff,.bmp" multiple={false} maxFiles={1} />
@@ -153,6 +166,7 @@ export function ScanToPdf() {
           </motion.div>
         )}
       </div>
+      </PostToolAdGate>
     </ToolLayout>
   );
 }

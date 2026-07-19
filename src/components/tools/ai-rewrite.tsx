@@ -11,7 +11,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { ToolLayout } from './tool-layout';
 import { FileUploader } from './file-uploader';
+import { PostToolAdGate } from '@/components/ads/post-tool-ad-gate';
 import { useAppStore } from '@/lib/store';
+import { useToolAd } from '@/lib/use-tool-ad';
 import { toast } from 'sonner';
 
 type Tone = 'professional' | 'casual' | 'academic' | 'creative';
@@ -62,10 +64,12 @@ function SparkleEffect() {
 
 export function AiRewrite() {
   const { uploadedFiles, isProcessing, setIsProcessing, clearUploadedFiles } = useAppStore();
+  const { isFree, getFetchOptions } = useToolAd();
   const [tone, setTone] = useState<Tone>('professional');
   const [inputText, setInputText] = useState('');
   const [rewrittenText, setRewrittenText] = useState('');
   const [copied, setCopied] = useState(false);
+  const [hasOutput, setHasOutput] = useState(false);
 
   const file = uploadedFiles[0];
 
@@ -78,10 +82,12 @@ export function AiRewrite() {
 
     setIsProcessing(true);
     setRewrittenText('');
+    setHasOutput(false);
 
     try {
       await new Promise((r) => setTimeout(r, 2500));
       setRewrittenText(demoRewrites[tone]);
+      setHasOutput(true);
       toast.success('Text rewritten successfully!');
     } catch {
       toast.error('Failed to rewrite text. Please try again.');
@@ -106,10 +112,17 @@ export function AiRewrite() {
     clearUploadedFiles();
     setInputText('');
     setRewrittenText('');
+    setHasOutput(false);
   };
 
   return (
     <ToolLayout toolId="ai-rewrite">
+      <PostToolAdGate
+        hasOutput={hasOutput}
+        onDownloadWithWatermark={() => toast.info('Free version — output includes watermark')}
+        onDownloadWithoutWatermark={() => toast.success('Rewritten text copied without watermark!')}
+        fileName="rewritten.txt"
+      >
       <div className="space-y-6">
         <FileUploader accept=".pdf" multiple={false} maxFiles={1} />
 
@@ -257,6 +270,7 @@ export function AiRewrite() {
           </motion.div>
         )}
       </div>
+      </PostToolAdGate>
     </ToolLayout>
   );
 }

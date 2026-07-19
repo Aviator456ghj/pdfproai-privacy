@@ -10,11 +10,14 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { ToolLayout } from './tool-layout';
 import { FileUploader } from './file-uploader';
+import { PostToolAdGate } from '@/components/ads/post-tool-ad-gate';
 import { useAppStore } from '@/lib/store';
+import { useToolAd } from '@/lib/use-tool-ad';
 import { toast } from 'sonner';
 
 export function PermissionControl() {
   const { uploadedFiles, isProcessing, setIsProcessing, clearUploadedFiles } = useAppStore();
+  const { isFree } = useToolAd();
   const [permissions, setPermissions] = useState({
     print: true,
     copy: false,
@@ -47,6 +50,14 @@ export function PermissionControl() {
     }
   };
 
+  const handleDownloadWithWatermark = () => {
+    toast.info('Permissions applied (Free version with watermark)');
+  };
+
+  const handleDownloadWithoutWatermark = () => {
+    toast.success('Permissions applied without watermark!');
+  };
+
   const reset = () => {
     clearUploadedFiles();
     setSuccess(false);
@@ -56,6 +67,12 @@ export function PermissionControl() {
 
   return (
     <ToolLayout toolId="permission-control">
+      <PostToolAdGate
+        hasOutput={success}
+        onDownloadWithWatermark={handleDownloadWithWatermark}
+        onDownloadWithoutWatermark={handleDownloadWithoutWatermark}
+        fileName="permissions.pdf"
+      >
       <div className="space-y-6">
         {!file ? (
           <FileUploader accept=".pdf" multiple={false} maxFiles={1} />
@@ -201,6 +218,7 @@ export function PermissionControl() {
           </motion.div>
         )}
       </div>
+      </PostToolAdGate>
     </ToolLayout>
   );
 }

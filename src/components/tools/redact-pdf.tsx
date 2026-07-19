@@ -21,7 +21,9 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { ToolLayout } from './tool-layout';
 import { FileUploader } from './file-uploader';
+import { PostToolAdGate } from '@/components/ads/post-tool-ad-gate';
 import { useAppStore } from '@/lib/store';
+import { useToolAd } from '@/lib/use-tool-ad';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -72,12 +74,14 @@ interface FoundItem {
 
 export function RedactPdf() {
   const { uploadedFiles, isProcessing, setIsProcessing, clearUploadedFiles } = useAppStore();
+  const { isFree, getFetchOptions } = useToolAd();
   const [enabledPatterns, setEnabledPatterns] = useState<Set<string>>(
     new Set(patterns.map((p) => p.id))
   );
   const [customText, setCustomText] = useState('');
   const [foundItems, setFoundItems] = useState<FoundItem[]>([]);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const [hasOutput, setHasOutput] = useState(false);
 
   const file = uploadedFiles[0];
 
@@ -144,16 +148,17 @@ export function RedactPdf() {
       formData.append('patterns', JSON.stringify(Array.from(enabledPatterns)));
       if (customText) formData.append('customText', customText);
 
-      const response = await fetch('/api/pdf/redact', {
+      const response = await fetch('/api/pdf/redact', getFetchOptions({
         method: 'POST',
         body: formData,
-      });
+      }));
 
       if (!response.ok) throw new Error('Redact failed');
 
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
+      setHasOutput(true);
       toast.success('Sensitive data redacted successfully!');
     } catch {
       toast.error('Failed to redact PDF. Please try again.');
@@ -162,18 +167,66 @@ export function RedactPdf() {
     }
   };
 
-  const handleDownload = () => {
+  const handleDownloadWithWatermark = () => {
     if (!downloadUrl || !file) return;
     const a = document.createElement('a');
     a.href = downloadUrl;
-    a.download = file.name.replace('.pdf', '-redacted.pdf');
+    a.download = file.name.replace('.pdf', '-redacted-watermarked.pdf');
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+    toast.info('Downloaded with watermark (Free version)');
+  };
+
+  const handleDownloadWithoutWatermark = async () => {
+    if (isFree) {
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('patterns', JSON.stringify(Array.from(enabledPatterns)));
+        if (customText) formData.append('customText', customText);
+
+        const response = await fetch('/api/pdf/redact', {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'X-User-Tier': 'premium',
+          },
+        });
+
+        if (!response.ok) throw new Error('Failed');
+
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = file.name.replace('.pdf', '-redacted.pdf');
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        toast.success('Downloaded without watermark!');
+      } catch {
+        handleDownloadWithWatermark();
+      }
+    } else {
+      if (!downloadUrl || !file) return;
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = file.name.replace('.pdf', '-redacted.pdf');
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
   };
 
   return (
     <ToolLayout toolId="redact">
+      <PostToolAdGate
+        hasOutput={hasOutput}
+        onDownloadWithWatermark={handleDownloadWithWatermark}
+        onDownloadWithoutWatermark={handleDownloadWithoutWatermark}
+        fileName="output.pdf"
+      >
       <div className="space-y-6">
         {!file ? (
           <FileUploader accept=".pdf" multiple={false} maxFiles={1} />
@@ -199,6 +252,7 @@ export function RedactPdf() {
                     clearUploadedFiles();
                     setFoundItems([]);
                     setDownloadUrl(null);
+                    setHasOutput(false);
                   }}
                 >
                   Change
@@ -322,7 +376,7 @@ export function RedactPdf() {
 
               {downloadUrl && (
                 <Button
-                  onClick={handleDownload}
+                  onClick={isFree ? handleDownloadWithWatermark : handleDownloadWithoutWatermark}
                   className="bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto"
                   size="lg"
                 >
@@ -337,6 +391,7 @@ export function RedactPdf() {
                   clearUploadedFiles();
                   setFoundItems([]);
                   setDownloadUrl(null);
+                  setHasOutput(false);
                 }}
                 className="w-full sm:w-auto"
               >
@@ -346,6 +401,7 @@ export function RedactPdf() {
           </motion.div>
         )}
       </div>
+      </PostToolAdGate>
     </ToolLayout>
   );
 }

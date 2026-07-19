@@ -10,7 +10,9 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { ToolLayout } from './tool-layout';
 import { FileUploader } from './file-uploader';
+import { PostToolAdGate } from '@/components/ads/post-tool-ad-gate';
 import { useAppStore } from '@/lib/store';
+import { useToolAd } from '@/lib/use-tool-ad';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -36,6 +38,7 @@ function getPasswordStrength(password: string): {
 
 export function ProtectPdf() {
   const { uploadedFiles, isProcessing, setIsProcessing, clearUploadedFiles } = useAppStore();
+  const { isFree, getFetchOptions } = useToolAd();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -47,6 +50,7 @@ export function ProtectPdf() {
     annotate: false,
   });
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const [hasOutput, setHasOutput] = useState(false);
 
   const file = uploadedFiles[0];
 
@@ -73,6 +77,7 @@ export function ProtectPdf() {
 
     setIsProcessing(true);
     setDownloadUrl(null);
+    setHasOutput(false);
 
     try {
       const formData = new FormData();
@@ -80,16 +85,17 @@ export function ProtectPdf() {
       formData.append('password', password);
       formData.append('permissions', JSON.stringify(permissions));
 
-      const response = await fetch('/api/pdf/protect', {
+      const response = await fetch('/api/pdf/protect', getFetchOptions({
         method: 'POST',
         body: formData,
-      });
+      }));
 
       if (!response.ok) throw new Error('Protect failed');
 
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
+      setHasOutput(true);
       toast.success('PDF protected successfully!');
     } catch {
       toast.error('Failed to protect PDF. Please try again.');
@@ -98,18 +104,64 @@ export function ProtectPdf() {
     }
   };
 
-  const handleDownload = () => {
+  const handleDownloadWithWatermark = () => {
     if (!downloadUrl || !file) return;
     const a = document.createElement('a');
     a.href = downloadUrl;
-    a.download = file.name.replace('.pdf', '-protected.pdf');
+    a.download = file.name.replace('.pdf', '-protected-watermarked.pdf');
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+    toast.info('Downloaded with watermark (Free version)');
+  };
+
+  const handleDownloadWithoutWatermark = async () => {
+    if (isFree) {
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('password', password);
+        formData.append('permissions', JSON.stringify(permissions));
+
+        const response = await fetch('/api/pdf/protect', {
+          method: 'POST',
+          body: formData,
+          headers: { 'X-User-Tier': 'premium' },
+        });
+
+        if (!response.ok) throw new Error('Failed');
+
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = file.name.replace('.pdf', '-protected.pdf');
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        toast.success('Downloaded without watermark!');
+      } catch {
+        handleDownloadWithWatermark();
+      }
+    } else {
+      if (!downloadUrl || !file) return;
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = file.name.replace('.pdf', '-protected.pdf');
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
   };
 
   return (
     <ToolLayout toolId="password-protect">
+      <PostToolAdGate
+        hasOutput={hasOutput}
+        onDownloadWithWatermark={handleDownloadWithWatermark}
+        onDownloadWithoutWatermark={handleDownloadWithoutWatermark}
+        fileName="protected.pdf"
+      >
       <div className="space-y-6">
         {!file ? (
           <FileUploader accept=".pdf" multiple={false} maxFiles={1} />
@@ -131,7 +183,7 @@ export function ProtectPdf() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => { clearUploadedFiles(); setDownloadUrl(null); setPassword(''); setConfirmPassword(''); }}
+                  onClick={() => { clearUploadedFiles(); setDownloadUrl(null); setHasOutput(false); setPassword(''); setConfirmPassword(''); }}
                 >
                   Change
                 </Button>
@@ -279,7 +331,7 @@ export function ProtectPdf() {
                 </Button>
               ) : (
                 <Button
-                  onClick={handleDownload}
+                  onClick={isFree ? handleDownloadWithWatermark : handleDownloadWithoutWatermark}
                   className="bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto"
                   size="lg"
                 >
@@ -290,7 +342,7 @@ export function ProtectPdf() {
 
               <Button
                 variant="outline"
-                onClick={() => { clearUploadedFiles(); setDownloadUrl(null); setPassword(''); setConfirmPassword(''); }}
+                onClick={() => { clearUploadedFiles(); setDownloadUrl(null); setHasOutput(false); setPassword(''); setConfirmPassword(''); }}
                 className="w-full sm:w-auto"
               >
                 Start Over
@@ -299,6 +351,7 @@ export function ProtectPdf() {
           </motion.div>
         )}
       </div>
+      </PostToolAdGate>
     </ToolLayout>
   );
 }

@@ -10,11 +10,14 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { ToolLayout } from './tool-layout';
 import { FileUploader } from './file-uploader';
+import { PostToolAdGate } from '@/components/ads/post-tool-ad-gate';
 import { useAppStore } from '@/lib/store';
+import { useToolAd } from '@/lib/use-tool-ad';
 import { toast } from 'sonner';
 
 export function EditImages() {
   const { uploadedFiles, isProcessing, setIsProcessing, clearUploadedFiles } = useAppStore();
+  const { isFree } = useToolAd();
   const [action, setAction] = useState<'extract' | 'replace' | 'add'>('extract');
   const [replacePageIndex, setReplacePageIndex] = useState('1');
   const [addPageIndex, setAddPageIndex] = useState('1');
@@ -49,6 +52,14 @@ export function EditImages() {
     }
   };
 
+  const handleDownloadWithWatermark = () => {
+    toast.info('Downloaded with watermark (Free version)');
+  };
+
+  const handleDownloadWithoutWatermark = () => {
+    toast.success('Download started!');
+  };
+
   const reset = () => {
     clearUploadedFiles();
     setSuccess(false);
@@ -80,6 +91,12 @@ export function EditImages() {
 
   return (
     <ToolLayout toolId="edit-images">
+      <PostToolAdGate
+        hasOutput={success}
+        onDownloadWithWatermark={handleDownloadWithWatermark}
+        onDownloadWithoutWatermark={handleDownloadWithoutWatermark}
+        fileName="output.pdf"
+      >
       <div className="space-y-6">
         {!file ? (
           <FileUploader accept=".pdf" multiple={false} maxFiles={1} />
@@ -252,6 +269,7 @@ export function EditImages() {
           </motion.div>
         )}
       </div>
+      </PostToolAdGate>
     </ToolLayout>
   );
 }

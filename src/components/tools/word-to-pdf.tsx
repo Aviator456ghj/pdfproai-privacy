@@ -2,15 +2,20 @@
 
 import { useState } from 'react';
 import { FileUploader } from '@/components/tools/file-uploader';
+import { ToolLayout } from './tool-layout';
+import { PostToolAdGate } from '@/components/ads/post-tool-ad-gate';
 import { useAppStore } from '@/lib/store';
+import { useToolAd } from '@/lib/use-tool-ad';
 import { Button } from '@/components/ui/button';
 import { Download, Loader2, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function WordToPdf() {
   const { uploadedFiles, clearUploadedFiles } = useAppStore();
+  const { isFree, getFetchOptions } = useToolAd();
   const [processing, setProcessing] = useState(false);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
+  const [hasOutput, setHasOutput] = useState(false);
 
   const handleConvert = async () => {
     if (uploadedFiles.length === 0) {
@@ -19,20 +24,22 @@ export function WordToPdf() {
     }
 
     setProcessing(true);
+    setHasOutput(false);
     try {
       const formData = new FormData();
       formData.append('file', uploadedFiles[0]);
 
-      const response = await fetch('/api/conversion/word-to-pdf', {
+      const response = await fetch('/api/conversion/word-to-pdf', getFetchOptions({
         method: 'POST',
         body: formData,
-      });
+      }));
 
       if (!response.ok) throw new Error('Conversion failed');
 
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       setResultUrl(url);
+      setHasOutput(true);
       toast.success('Document converted to PDF successfully!');
     } catch {
       toast.error('Failed to convert document. Please ensure it is a valid .docx file.');
@@ -41,18 +48,66 @@ export function WordToPdf() {
     }
   };
 
-  const handleDownload = () => {
-    if (resultUrl) {
+  const handleDownloadWithWatermark = () => {
+    if (!resultUrl) return;
+    const a = document.createElement('a');
+    a.href = resultUrl;
+    const originalName = uploadedFiles[0]?.name.replace(/\.[^/.]+$/, '') || 'document';
+    a.download = `${originalName}-watermarked.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    toast.info('Downloaded with watermark (Free version)');
+  };
+
+  const handleDownloadWithoutWatermark = async () => {
+    if (isFree) {
+      try {
+        const formData = new FormData();
+        formData.append('file', uploadedFiles[0]);
+
+        const response = await fetch('/api/conversion/word-to-pdf', {
+          method: 'POST',
+          body: formData,
+          headers: { 'X-User-Tier': 'premium' },
+        });
+
+        if (!response.ok) throw new Error('Failed');
+
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const originalName = uploadedFiles[0]?.name.replace(/\.[^/.]+$/, '') || 'document';
+        a.download = `${originalName}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        toast.success('Downloaded without watermark!');
+      } catch {
+        handleDownloadWithWatermark();
+      }
+    } else {
+      if (!resultUrl) return;
       const a = document.createElement('a');
       a.href = resultUrl;
       const originalName = uploadedFiles[0]?.name.replace(/\.[^/.]+$/, '') || 'document';
       a.download = `${originalName}.pdf`;
+      document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
     }
   };
 
   return (
-    <div className="space-y-6">
+    <ToolLayout toolId="word-to-pdf">
+      <PostToolAdGate
+        hasOutput={hasOutput}
+        onDownloadWithWatermark={handleDownloadWithWatermark}
+        onDownloadWithoutWatermark={handleDownloadWithoutWatermark}
+        fileName="document.pdf"
+      >
+      <div className="space-y-6">
       {!resultUrl ? (
         <>
           <FileUploader accept=".docx,.doc" multiple={false} maxFiles={1} />
@@ -100,7 +155,7 @@ export function WordToPdf() {
           </p>
           <div className="flex gap-3">
             <Button
-              onClick={handleDownload}
+              onClick={isFree ? handleDownloadWithWatermark : handleDownloadWithoutWatermark}
               className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white"
             >
               <Download className="h-4 w-4 mr-2" />
@@ -108,13 +163,15 @@ export function WordToPdf() {
             </Button>
             <Button
               variant="outline"
-              onClick={() => { setResultUrl(null); clearUploadedFiles(); }}
+              onClick={() => { setResultUrl(null); setHasOutput(false); clearUploadedFiles(); }}
             >
               Convert Another
             </Button>
           </div>
         </div>
       )}
-    </div>
+      </div>
+      </PostToolAdGate>
+    </ToolLayout>
   );
 }
