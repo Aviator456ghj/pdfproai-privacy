@@ -12,10 +12,13 @@ import { FAQ } from '@/components/landing/faq';
 import { StatsBanner } from '@/components/landing/stats-banner';
 import { CTASection } from '@/components/landing/cta-section';
 import { Testimonials } from '@/components/landing/testimonials';
-import { AdModal } from '@/components/ads/ad-modal';
 import { LandingInterstitialAd } from '@/components/ads/landing-interstitial-ad';
 import { SectionAdBanner } from '@/components/ads/section-ad-banner';
 import { StickyAdBar } from '@/components/ads/sticky-ad-bar';
+import { ProcessingAdOverlay } from '@/components/ads/processing-ad-overlay';
+import { UsageLimitModal } from '@/components/ads/usage-limit-modal';
+import { PrivacyPolicy } from '@/components/legal/privacy-policy';
+import { TermsOfService } from '@/components/legal/terms-of-service';
 import { lazy, Suspense, useCallback } from 'react';
 
 // Lazy load tool components for performance
@@ -169,9 +172,7 @@ function PricingPage() {
 }
 
 function ViewRouter() {
-  const { view, activeToolId } = useAppStore();
-  const ad = useAppStore((s) => s.ad);
-  const setView = useAppStore((s) => s.setView);
+  const { view, activeToolId, isProcessing } = useAppStore();
 
   let content: React.ReactNode = null;
   let key = view;
@@ -194,23 +195,11 @@ function ViewRouter() {
     content = <PricingPage />;
   }
 
-  // Pre-tool ad gate: called after user watches the pre-ad
-  const handlePreAdComplete = useCallback(() => {
-    const pendingToolId = useAppStore.getState().ad.pendingToolId;
-    if (pendingToolId) {
-      setView('tool');
-      // Manually set the active tool since setView clears it
-      useAppStore.setState({
-        activeToolId: pendingToolId,
-        ad: {
-          ...useAppStore.getState().ad,
-          showPreAd: false,
-          preAdCompleted: true,
-          pendingToolId: null,
-        },
-      });
-    }
-  }, [setView]);
+  // Processing ad overlay dismiss handler — no-op, overlay manages itself
+  const handleProcessingAdDismiss = useCallback(() => {
+    // The overlay auto-dismisses when both processing and ad are complete.
+    // This callback is for any additional cleanup if needed.
+  }, []);
 
   return (
     <>
@@ -229,15 +218,11 @@ function ViewRouter() {
         </motion.div>
       </AnimatePresence>
 
-      {/* Pre-tool ad modal */}
-      <AnimatePresence>
-        {ad.showPreAd && (
-          <AdModal
-            type="pre"
-            onComplete={handlePreAdComplete}
-          />
-        )}
-      </AnimatePresence>
+      {/* Processing ad overlay: shows during tool processing for free users */}
+      <ProcessingAdOverlay
+        isProcessing={isProcessing}
+        onDismiss={handleProcessingAdDismiss}
+      />
 
       {/* Centralized: Sticky bottom ad bar (appears after scrolling) */}
       <StickyAdBar />
@@ -246,6 +231,13 @@ function ViewRouter() {
 }
 
 export default function HomePage() {
+  const showPrivacyPolicy = useAppStore((s) => s.showPrivacyPolicy);
+  const setShowPrivacyPolicy = useAppStore((s) => s.setShowPrivacyPolicy);
+  const showTermsOfService = useAppStore((s) => s.showTermsOfService);
+  const setShowTermsOfService = useAppStore((s) => s.setShowTermsOfService);
+  const showUsageLimitModal = useAppStore((s) => s.showUsageLimitModal);
+  const setShowUsageLimitModal = useAppStore((s) => s.setShowUsageLimitModal);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -253,6 +245,16 @@ export default function HomePage() {
         <ViewRouter />
       </main>
       <Footer />
+
+      {/* Legal page modals */}
+      <PrivacyPolicy open={showPrivacyPolicy} onClose={() => setShowPrivacyPolicy(false)} />
+      <TermsOfService open={showTermsOfService} onClose={() => setShowTermsOfService(false)} />
+
+      {/* Usage limit modal */}
+      <UsageLimitModal
+        open={showUsageLimitModal}
+        onClose={() => setShowUsageLimitModal(false)}
+      />
     </div>
   );
 }

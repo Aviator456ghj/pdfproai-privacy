@@ -2,11 +2,12 @@
 
 import React, { useCallback, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, X, FileText, CheckCircle2 } from 'lucide-react';
+import { Upload, X, FileText, CheckCircle2, Lock } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useAppStore } from '@/lib/store';
+import { useToolAd } from '@/lib/use-tool-ad';
 import { toast } from 'sonner';
 
 interface FileUploaderProps {
@@ -36,6 +37,9 @@ export function FileUploader({
   >({});
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { addUploadedFiles, uploadedFiles, removeUploadedFile } = useAppStore();
+  const { isFree, remainingTasks, dailyLimit, checkUsageLimit } = useToolAd();
+
+  const isLimitReached = isFree && remainingTasks <= 0;
 
   const simulateProgress = useCallback(
     (fileName: string) => {
@@ -65,6 +69,9 @@ export function FileUploader({
     (files: FileList | null) => {
       if (!files || files.length === 0) return;
 
+      // Check usage limit for free users
+      if (!checkUsageLimit()) return;
+
       const fileArray = Array.from(files);
       const validFiles = fileArray.filter((file) => {
         if (maxSize && file.size > maxSize) {
@@ -86,14 +93,15 @@ export function FileUploader({
         toast.success(`${validFiles.length} file${validFiles.length > 1 ? 's' : ''} added`);
       }
     },
-    [addUploadedFiles, maxFiles, maxSize, simulateProgress, uploadedFiles.length]
+    [addUploadedFiles, maxFiles, maxSize, simulateProgress, uploadedFiles.length, checkUsageLimit]
   );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (isLimitReached) return;
     setIsDragOver(true);
-  }, []);
+  }, [isLimitReached]);
 
   const handleDragLeave = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -111,7 +119,13 @@ export function FileUploader({
     [handleFiles]
   );
 
-  const handleClick = () => fileInputRef.current?.click();
+  const handleClick = () => {
+    if (isLimitReached) {
+      useAppStore.getState().setShowUsageLimitModal(true);
+      return;
+    }
+    fileInputRef.current?.click();
+  };
 
   const getAcceptLabel = () => {
     if (!accept) return 'any file';
@@ -126,19 +140,21 @@ export function FileUploader({
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         onClick={handleClick}
-        className="relative cursor-pointer"
-        whileHover={{ scale: 1.005 }}
-        whileTap={{ scale: 0.995 }}
+        className={`relative ${isLimitReached ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+        whileHover={!isLimitReached ? { scale: 1.005 } : {}}
+        whileTap={!isLimitReached ? { scale: 0.995 } : {}}
       >
         <Card
           className={`relative overflow-hidden border-2 border-dashed transition-all duration-300 p-8 sm:p-12 text-center ${
-            isDragOver
+            isLimitReached
+              ? 'border-muted-foreground/20 bg-muted/20 opacity-60'
+              : isDragOver
               ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20'
               : 'border-muted-foreground/25 hover:border-emerald-400/50 hover:bg-muted/30'
           }`}
         >
           <AnimatePresence>
-            {isDragOver && (
+            {isDragOver && !isLimitReached && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -153,31 +169,52 @@ export function FileUploader({
             transition={{ type: 'spring', stiffness: 300, damping: 20 }}
             className="flex flex-col items-center gap-3"
           >
-            <motion.div
-              animate={isDragOver ? { rotate: [0, -5, 5, 0] } : {}}
-              transition={{ duration: 0.5, repeat: isDragOver ? Infinity : 0 }}
-              className="rounded-full bg-emerald-100 dark:bg-emerald-900/30 p-4"
-            >
-              <Upload
-                className={`h-8 w-8 transition-colors ${
-                  isDragOver ? 'text-emerald-600' : 'text-emerald-500'
-                }`}
-              />
-            </motion.div>
+            {isLimitReached ? (
+              <>
+                <div className="rounded-full bg-slate-100 dark:bg-slate-800 p-4">
+                  <Lock className="h-8 w-8 text-slate-400" />
+                </div>
+                <div>
+                  <p className="text-base font-semibold text-foreground">
+                    Daily Limit Reached
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    You&apos;ve used all {dailyLimit} free tasks for today.
+                  </p>
+                </div>
+                <p className="text-xs text-muted-foreground/70">
+                  Upgrade to Premium for unlimited access, or come back tomorrow.
+                </p>
+              </>
+            ) : (
+              <>
+                <motion.div
+                  animate={isDragOver ? { rotate: [0, -5, 5, 0] } : {}}
+                  transition={{ duration: 0.5, repeat: isDragOver ? Infinity : 0 }}
+                  className="rounded-full bg-emerald-100 dark:bg-emerald-900/30 p-4"
+                >
+                  <Upload
+                    className={`h-8 w-8 transition-colors ${
+                      isDragOver ? 'text-emerald-600' : 'text-emerald-500'
+                    }`}
+                  />
+                </motion.div>
 
-            <div>
-              <p className="text-base font-semibold text-foreground">
-                {isDragOver ? 'Drop files here' : 'Drag & drop files here'}
-              </p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                or <span className="text-emerald-600 font-medium underline underline-offset-2">browse files</span>
-              </p>
-            </div>
+                <div>
+                  <p className="text-base font-semibold text-foreground">
+                    {isDragOver ? 'Drop files here' : 'Drag & drop files here'}
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    or <span className="text-emerald-600 font-medium underline underline-offset-2">browse files</span>
+                  </p>
+                </div>
 
-            <p className="text-xs text-muted-foreground/70">
-              Supports {getAcceptLabel()} {multiple ? '• Multiple files' : '• Single file'}
-              {maxSize ? ` • Max ${formatFileSize(maxSize)}` : ''}
-            </p>
+                <p className="text-xs text-muted-foreground/70">
+                  Supports {getAcceptLabel()} {multiple ? '• Multiple files' : '• Single file'}
+                  {maxSize ? ` • Max ${formatFileSize(maxSize)}` : ''}
+                </p>
+              </>
+            )}
           </motion.div>
         </Card>
 

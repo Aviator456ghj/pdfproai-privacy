@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, ChevronRight, Home, Crown, Eye, Tag } from 'lucide-react';
+import { ArrowLeft, ChevronRight, Home, Crown, Tag, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -17,6 +17,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { useAppStore } from '@/lib/store';
 import { getToolById, getRelatedTools, getCategoryById } from '@/lib/tools';
+import { useToolAd } from '@/lib/use-tool-ad';
 import { cn } from '@/lib/utils';
 
 interface ToolLayoutProps {
@@ -27,11 +28,11 @@ interface ToolLayoutProps {
 export function ToolLayout({ toolId, children }: ToolLayoutProps) {
   const goHome = useAppStore((s) => s.goHome);
   const clearUploadedFiles = useAppStore((s) => s.clearUploadedFiles);
-  const userTier = useAppStore((s) => s.userTier);
   const setUserTier = useAppStore((s) => s.setUserTier);
   const tool = getToolById(toolId);
   const relatedTools = getRelatedTools(toolId);
   const category = tool ? getCategoryById(tool.category) : undefined;
+  const { isFree, remainingTasks, dailyLimit } = useToolAd();
 
   if (!tool) {
     return (
@@ -42,7 +43,6 @@ export function ToolLayout({ toolId, children }: ToolLayoutProps) {
   }
 
   const Icon = tool.icon;
-  const isFree = userTier === 'free';
 
   const handleGoHome = () => {
     clearUploadedFiles();
@@ -153,7 +153,7 @@ export function ToolLayout({ toolId, children }: ToolLayoutProps) {
         </div>
       </motion.div>
 
-      {/* Free Tier Notice Banner */}
+      {/* Free Tier Notice Banner with Usage Counter */}
       {isFree && (
         <motion.div
           initial={{ opacity: 0, height: 0 }}
@@ -171,7 +171,10 @@ export function ToolLayout({ toolId, children }: ToolLayoutProps) {
                   Free Version
                 </p>
                 <p className="text-xs text-muted-foreground truncate">
-                  Outputs include watermark • Ads support free access
+                  <span className="inline-flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    {remainingTasks} of {dailyLimit} tasks remaining today
+                  </span>
                 </p>
               </div>
             </div>

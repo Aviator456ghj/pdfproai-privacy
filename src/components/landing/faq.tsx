@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Plus, Minus, Mail, MessageCircle } from 'lucide-react';
+import { Plus, Minus, Mail, MessageCircle, Shield, Zap, Crown, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Accordion,
@@ -12,71 +12,57 @@ import {
 
 const faqs = [
   {
-    question: 'Is PDFPro AI free to use?',
+    question: 'How secure are my uploaded PDF files?',
     answer:
-      'Yes! PDFPro AI offers a generous free plan with basic PDF tools including merge, split, compress, rotate, and more. You can process up to 5 tasks per day with a 10 MB file size limit. For unlimited usage and AI features, check out our Premium and Business plans.',
+      'Your files are encrypted with AES-256 during upload and processing (TLS 1.3). Most importantly, all uploaded files are automatically and permanently deleted from our servers within 2 hours of processing. No human ever accesses your documents, and we never use your files for training or any other purpose. Your data stays yours.',
+    icon: Shield,
   },
   {
-    question: 'How secure are my uploaded files?',
+    question: 'How fast are the AI-powered tools?',
     answer:
-      'Your security is our top priority. All files are encrypted with AES-256 during upload and processing. Files are automatically deleted from our servers within 2 hours of processing. We never store your documents permanently, and we never share your data with third parties.',
+      'Our AI tools process most documents in under 10 seconds. Standard operations like merge, split, and compress typically complete in 2–5 seconds depending on file size. AI features like summarization and translation leverage optimized models for near-instant results — even large documents (50+ pages) are processed in seconds, not minutes.',
+    icon: Zap,
   },
   {
-    question: 'What AI features are available?',
+    question: 'What are the free plan limits?',
     answer:
-      'Our AI-powered tools include PDF summarization, AI chat (ask questions about your PDF), translation to 100+ languages, content rewriting, legal document explanation, medical report analysis, study note generation, flashcard creation, table extraction, and key point extraction.',
+      'The free plan includes 5 tasks per day with a 10 MB file size limit per file. Free-tier outputs include a watermark and you will see a brief advertisement during processing. This allows us to keep the tools completely free. You can upgrade anytime to remove all limits, watermarks, and ads.',
+    icon: Clock,
   },
   {
-    question: 'Do I need to install any software?',
+    question: 'What do I get with Premium?',
     answer:
-      'No installation required! PDFPro AI works entirely in your web browser. Simply open the website, upload your PDF, and start working. We support all modern browsers including Chrome, Firefox, Safari, and Edge on both desktop and mobile devices.',
+      'Premium unlocks unlimited daily tasks with no file size restrictions, removes all watermarks from downloads, eliminates advertisements for instant processing, and gives you access to all 100+ tools including advanced AI features like document summarization, translation, and intelligent chat. Premium users also get priority processing and dedicated support.',
+    icon: Crown,
   },
   {
-    question: 'What file formats can I convert to and from?',
+    question: 'Will my file quality be affected by compression or conversion?',
     answer:
-      'PDFPro AI supports conversion between PDF and Word (DOCX), Excel (XLSX), PowerPoint (PPTX), images (PNG, JPG), HTML, and EPUB. Our conversion engine preserves formatting, tables, images, and layout as much as possible.',
-  },
-  {
-    question: 'Is there an API for developers?',
-    answer:
-      'Yes, our Business plan includes full API access. You can integrate PDFPro AI into your applications with our RESTful API. We provide SDKs for Python, JavaScript, Java, and Go, along with comprehensive documentation and code examples.',
-  },
-  {
-    question: 'Can I process multiple files at once?',
-    answer:
-      'Batch processing is available on Premium and Business plans. You can upload and process hundreds of files simultaneously. Our cloud infrastructure scales automatically to handle your workload, and results are packaged for easy download.',
-  },
-  {
-    question: 'What happens if I exceed my free plan limits?',
-    answer:
-      "When you reach your daily limit on the free plan, you'll see a friendly notification suggesting you upgrade to Premium. You can continue using the free plan the next day, or upgrade for unlimited access with no waiting.",
-  },
-  {
-    question: 'Do you offer refunds?',
-    answer:
-      "Yes, we offer a 30-day money-back guarantee on all paid plans. If you're not satisfied with PDFPro AI, contact our support team and we'll process a full refund — no questions asked.",
-  },
-  {
-    question: 'Can I use PDFPro AI for commercial purposes?',
-    answer:
-      'Absolutely! Both Premium and Business plans include commercial usage rights. The Business plan additionally offers white-label branding, allowing you to remove our branding and use the tools under your own brand.',
+      'PDFPro AI uses intelligent algorithms that preserve maximum quality. For compression, you choose the level — Low compression maintains near-original quality, while High compression maximizes size reduction. For format conversions (PDF to Word, Excel, etc.), our engine preserves formatting, tables, images, and layout as accurately as possible. AI tools do not modify your original file.',
+    icon: MessageCircle,
   },
 ];
 
 function FaqItem({ faq, index }: { faq: typeof faqs[0]; index: number }) {
+  const FaqIcon = faq.icon;
   return (
     <AccordionItem
       value={`item-${index}`}
       className="border-0 rounded-xl bg-white border border-slate-200/80 overflow-hidden transition-all duration-300 data-[state=open]:border-emerald-200/80 data-[state=open]:shadow-sm data-[state=open]:shadow-emerald-100/50"
     >
       <AccordionTrigger className="group text-left text-sm sm:text-[15px] font-semibold text-slate-800 hover:text-emerald-700 hover:no-underline py-4 px-5 gap-3 transition-colors duration-200 [&>svg]:hidden">
-        <span className="flex-1 pr-4">{faq.question}</span>
+        <span className="flex items-center gap-3 flex-1 pr-4">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 transition-colors duration-300 group-data-[state=open]:bg-emerald-100">
+            <FaqIcon className="h-4 w-4" />
+          </span>
+          <span className="flex-1">{faq.question}</span>
+        </span>
         <span className="relative flex items-center justify-center size-7 rounded-full bg-slate-100 shrink-0 transition-colors duration-300 group-data-[state=open]:bg-emerald-100">
           <Plus className="size-3.5 text-slate-500 absolute transition-all duration-300 group-data-[state=open]:rotate-90 group-data-[state=open]:text-emerald-600" />
           <Minus className="size-3.5 text-emerald-600 absolute opacity-0 transition-opacity duration-300 group-data-[state=open]:opacity-100" />
         </span>
       </AccordionTrigger>
-      <AccordionContent className="text-sm text-slate-600 leading-relaxed px-5 pb-4 border-l-[3px] border-l-emerald-500 ml-5 pl-5 -ml-0">
+      <AccordionContent className="text-sm text-slate-600 leading-relaxed px-5 pb-4 pl-[4.25rem]">
         {faq.answer}
       </AccordionContent>
     </AccordionItem>
@@ -84,27 +70,9 @@ function FaqItem({ faq, index }: { faq: typeof faqs[0]; index: number }) {
 }
 
 export function FAQ() {
-  const leftFaqs = faqs.slice(0, 5);
-  const rightFaqs = faqs.slice(5, 10);
-
-  const renderFaqColumn = (items: typeof faqs, startIndex: number) => (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.5, delay: 0.15 }}
-    >
-      <Accordion type="single" collapsible className="space-y-3">
-        {items.map((faq, i) => (
-          <FaqItem key={startIndex + i} faq={faq} index={startIndex + i} />
-        ))}
-      </Accordion>
-    </motion.div>
-  );
-
   return (
     <section className="py-20 sm:py-28 bg-slate-50/50">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+      <div className="mx-auto max-w-3xl px-4 sm:px-6">
         {/* Section header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -121,11 +89,19 @@ export function FAQ() {
           </p>
         </motion.div>
 
-        {/* 2-column FAQ layout on desktop */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
-          {renderFaqColumn(leftFaqs, 0)}
-          {renderFaqColumn(rightFaqs, 5)}
-        </div>
+        {/* FAQ list */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.15 }}
+        >
+          <Accordion type="single" collapsible className="space-y-3">
+            {faqs.map((faq, i) => (
+              <FaqItem key={i} faq={faq} index={i} />
+            ))}
+          </Accordion>
+        </motion.div>
 
         {/* Still have questions? */}
         <motion.div

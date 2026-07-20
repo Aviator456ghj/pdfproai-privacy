@@ -1,0 +1,897 @@
+✓ PDFPro AI - The Most Complete AI-Powered PDF Platform | 100+ Tools
+  http://localhost:3000/
+- banner
+  - button "PDF PDFPro AI" [ref=e2]
+    - StaticText "PDF"
+    - StaticText "PDFPro"
+    - StaticText "AI"
+  - navigation
+    - button "PDF Essentials" [ref=e16]
+    - button "Conversion" [ref=e17]
+    - button "OCR" [ref=e18]
+    - button "AI Features" [ref=e19]
+    - button "Editing" [ref=e20]
+    - button "More" [ref=e40]
+  - button "Toggle theme" [ref=e3]
+    - StaticText "Toggle theme"
+  - button [ref=e21]
+  - button "Free" [ref=e4]
+    - StaticText "Free"
+  - button "Log In" [ref=e5]
+  - button "Get Premium" [ref=e6]
+- main
+  - generic
+    - generic
+    - StaticText "S"
+    - StaticText "M"
+    - StaticText "A"
+    - StaticText "J"
+    - StaticText "K"
+    - StaticText "R"
+    - StaticText "Trusted by 2M+ users worldwide"
+    - heading "TheAI-Powered PDF Platform" [level=1, ref=e41]
+      - StaticText "TheAI-Powered"
+      - LineBreak "\n"
+      - StaticText "PDF Platform"
+    - paragraph
+      - StaticText "Every PDF tool you'll ever need, powered by cutting-edge AI. Merge, compress, convert, edit & transform in seconds."
+    - list
+      - listitem [level=1]
+        - StaticText "No installation required"
+      - listitem [level=1]
+        - StaticText "Bank-level encryption"
+      - listitem [level=1]
+        - StaticText "Process files in seconds"
+    - button "Get Started Free" [ref=e42]
+    - button "Watch Demo" [ref=e43]
+    - paragraph
+      - StaticText "No signup required • Free forever plan • 100+ tools"
+    - textbox "Search tools... (e.g., merge, compress, AI summarize)" [ref=e170]
+    - StaticText "Popular:"
+    - button "Merge PDF" [ref=e44]
+    - button "Compress PDF" [ref=e45]
+    - button "PDF to Word" [ref=e46]
+    - button "AI Summarize" [ref=e47]
+    - StaticText "10M+"
+    - StaticText "Documents Processed"
+    - StaticText "100+"
+    - StaticText "Tools"
+    - StaticText "2M+"
+    - StaticText "Happy Users"
+    - StaticText "4.9★"
+    - StaticText "Rating"
+    - heading "How It Works" [level=2, ref=e48]
+    - paragraph
+      - StaticText "Three simple steps to transform your PDFs"
+    - generic
+      - generic
+        - StaticText "1"
+        - heading "Upload" [level=3, ref=e171]
+        - paragraph
+          - StaticText "Drag & drop your PDF files"
+      - generic
+        - StaticText "2"
+        - heading "Choose Tool" [level=3, ref=e172]
+        - paragraph
+          - StaticText "Select from 100+ powerful tools"
+      - generic
+        - StaticText "3"
+        - heading "Download" [level=3, ref=e173]
+        - paragraph
+          - StaticText "Get your processed file instantly"
+  - generic
+    - generic
+    - generic
+      - heading "Trusted by Millions Worldwide" [level=2, ref=e49]
+      - paragraph
+        - StaticText "Numbers that speak for themselves. Join the community of professionals who rely on PDFPro AI every day."
+      - generic
+        - generic
+          - StaticText "0"
+          - StaticText "M+"
+          - StaticText "Documents Processed"
+      - generic
+        - generic
+          - StaticText "0"
+          - StaticText "+"
+          - StaticText "Powerful Tools"
+      - generic
+        - generic
+          - StaticText "0"
+          - StaticText "M+"
+          - StaticText "Happy Users"
+      - generic
+        - StaticText "0.0"
+        - StaticText "%"
+        - StaticText "Uptime SLA"
+  - generic
+    - paragraph
+      - StaticText "Go Premium — Remove all watermarks & ads"
+    - button "Upgrade Now" [ref=e22]
+    - button "Dismiss" [ref=e23]
+  - heading "Explore All 52 Tools" [level=2, ref=e24]
+    - StaticText "Explore All 52 Tools"
+  - paragraph
+    - StaticText "From basic operations like merge and split, to AI-powered summarization and translation — find the perfect tool for every PDF task. All tools run securely in your browser."
+  - generic
+    - heading "PDF Essentials" [level=2, ref=e50]
+    - paragraph
+      - StaticText "Core PDF operations for everyday use"
+    - StaticText "9"
+    - StaticText " tool"
+    - StaticText "s"
+    - button "Free Merge PDF Combine multiple PDFs into one document Open" [ref=e51]
+      - StaticText "Free"
+      - generic
+        - heading "Merge PDF" [level=3, ref=e174]
+        - paragraph
+          - StaticText "Combine multiple PDFs into one document"
+      - StaticText "Open"
+    - button "Free Split PDF Separate PDF into individual pages or sections Open" [ref=e52]
+      - StaticText "Free"
+      - generic
+        - heading "Split PDF" [level=3, ref=e175]
+        - paragraph
+          - StaticText "Separate PDF into individual pages or sections"
+      - StaticText "Open"
+    - button "Free Compress PDF Reduce file size while maintaining quality Open" [ref=e53]
+      - StaticText "Free"
+      - generic
+        - heading "Compress PDF" [level=3, ref=e176]
+        - paragraph
+          - StaticText "Reduce file size while maintaining quality"
+      - StaticText "Open"
+    - button "Free Rotate PDF Rotate pages to any angle Open" [ref=e54]
+      - StaticText "Free"
+      - generic
+        - heading "Rotate PDF" [level=3, ref=e177]
+        - paragraph
+          - StaticText "Rotate pages to any angle"
+      - StaticText "Open"
+    - button "Free Delete Pages Remove unwanted pages from your PDF Open" [ref=e55]
+      - StaticText "Free"
+      - generic
+        - heading "Delete Pages" [level=3, ref=e178]
+        - paragraph
+          - StaticText "Remove unwanted pages from your PDF"
+      - StaticText "Open"
+    - button "Free Extract Pages Pull specific pages into a new PDF Open" [ref=e56]
+      - StaticText "Free"
+      - generic
+        - heading "Extract Pages" [level=3, ref=e179]
+        - paragraph
+          - StaticText "Pull specific pages into a new PDF"
+      - StaticText "Open"
+    - button "Free Rearrange Pages Drag and drop to reorder pages Open" [ref=e57]
+      - StaticText "Free"
+      - generic
+        - heading "Rearrange Pages" [level=3, ref=e180]
+        - paragraph
+          - StaticText "Drag and drop to reorder pages"
+      - StaticText "Open"
+    - button "PRO Watermark Add text or image watermarks Open" [ref=e58]
+      - StaticText "PRO"
+      - generic
+        - heading "Watermark" [level=3, ref=e181]
+        - paragraph
+          - StaticText "Add text or image watermarks"
+      - StaticText "Open"
+    - button "Free Page Numbers Add page numbers to your document Open" [ref=e59]
+      - StaticText "Free"
+      - generic
+        - heading "Page Numbers" [level=3, ref=e182]
+        - paragraph
+          - StaticText "Add page numbers to your document"
+      - StaticText "Open"
+  - generic
+    - heading "Conversion" [level=2, ref=e60]
+    - paragraph
+      - StaticText "Convert between PDF and other formats"
+    - StaticText "10"
+    - StaticText " tool"
+    - StaticText "s"
+    - button "PRO PDF to Word Convert PDF to editable DOCX format Open" [ref=e61]
+      - StaticText "PRO"
+      - generic
+        - heading "PDF to Word" [level=3, ref=e183]
+        - paragraph
+          - StaticText "Convert PDF to editable DOCX format"
+      - StaticText "Open"
+    - button "Free Word to PDF Convert DOCX files to PDF Open" [ref=e62]
+      - StaticText "Free"
+      - generic
+        - heading "Word to PDF" [level=3, ref=e184]
+        - paragraph
+          - StaticText "Convert DOCX files to PDF"
+      - StaticText "Open"
+    - button "PRO Excel to PDF Convert spreadsheets to PDF Open" [ref=e63]
+      - StaticText "PRO"
+      - generic
+        - heading "Excel to PDF" [level=3, ref=e185]
+        - paragraph
+          - StaticText "Convert spreadsheets to PDF"
+      - StaticText "Open"
+    - button "PRO PDF to Excel Extract tables from PDF to XLSX Open" [ref=e64]
+      - StaticText "PRO"
+      - generic
+        - heading "PDF to Excel" [level=3, ref=e186]
+        - paragraph
+          - StaticText "Extract tables from PDF to XLSX"
+      - StaticText "Open"
+    - button "PRO PPT to PDF Convert presentations to PDF Open" [ref=e65]
+      - StaticText "PRO"
+      - generic
+        - heading "PPT to PDF" [level=3, ref=e187]
+        - paragraph
+          - StaticText "Convert presentations to PDF"
+      - StaticText "Open"
+    - button "PRO PDF to PPT Convert PDF to PowerPoint Open" [ref=e66]
+      - StaticText "PRO"
+      - generic
+        - heading "PDF to PPT" [level=3, ref=e188]
+        - paragraph
+          - StaticText "Convert PDF to PowerPoint"
+      - StaticText "Open"
+    - button "Free PDF to Images Convert each page to PNG or JPG Open" [ref=e67]
+      - StaticText "Free"
+      - generic
+        - heading "PDF to Images" [level=3, ref=e189]
+        - paragraph
+          - StaticText "Convert each page to PNG or JPG"
+      - StaticText "Open"
+    - button "Free Images to PDF Create PDF from multiple images Open" [ref=e68]
+      - StaticText "Free"
+      - generic
+        - heading "Images to PDF" [level=3, ref=e190]
+        - paragraph
+          - StaticText "Create PDF from multiple images"
+      - StaticText "Open"
+    - button "NEW HTML to PDF Convert web pages to PDF Open" [ref=e69]
+      - StaticText "NEW"
+      - generic
+        - heading "HTML to PDF" [level=3, ref=e191]
+        - paragraph
+          - StaticText "Convert web pages to PDF"
+      - StaticText "Open"
+    - button "NEW EPUB to PDF Convert ebooks to PDF format Open" [ref=e70]
+      - StaticText "NEW"
+      - generic
+        - heading "EPUB to PDF" [level=3, ref=e192]
+        - paragraph
+          - StaticText "Convert ebooks to PDF format"
+      - StaticText "Open"
+  - generic
+    - heading "OCR" [level=2, ref=e71]
+    - paragraph
+      - StaticText "Optical Character Recognition powered by AI"
+    - StaticText "5"
+    - StaticText " tool"
+    - StaticText "s"
+    - button "PRO Scan to PDF Convert scanned documents to searchable PDFs Open" [ref=e72]
+      - StaticText "PRO"
+      - generic
+        - heading "Scan to PDF" [level=3, ref=e193]
+        - paragraph
+          - StaticText "Convert scanned documents to searchable PDFs"
+      - StaticText "Open"
+    - button "PRO Image to Text Extract text from images using OCR Open" [ref=e73]
+      - StaticText "PRO"
+      - generic
+        - heading "Image to Text" [level=3, ref=e194]
+        - paragraph
+          - StaticText "Extract text from images using OCR"
+      - StaticText "Open"
+    - button "NEW Handwriting Recognition Recognize handwritten text in documents Open" [ref=e74]
+      - StaticText "NEW"
+      - generic
+        - heading "Handwriting Recognition" [level=3, ref=e195]
+        - paragraph
+          - StaticText "Recognize handwritten text in documents"
+      - StaticText "Open"
+    - button "PRO Searchable PDF Make scanned PDFs searchable Open" [ref=e75]
+      - StaticText "PRO"
+      - generic
+        - heading "Searchable PDF" [level=3, ref=e196]
+        - paragraph
+          - StaticText "Make scanned PDFs searchable"
+      - StaticText "Open"
+    - button "NEW Multi-language OCR Extract text in 100+ languages Open" [ref=e76]
+      - StaticText "NEW"
+      - generic
+        - heading "Multi-language OCR" [level=3, ref=e197]
+        - paragraph
+          - StaticText "Extract text in 100+ languages"
+      - StaticText "Open"
+  - generic
+    - heading "AI Features" [level=2, ref=e77]
+    - paragraph
+      - StaticText "Intelligent document processing with AI"
+    - StaticText "10"
+    - StaticText " tool"
+    - StaticText "s"
+    - button "AI Summarize PDF Get AI-powered summaries of your documents Open" [ref=e78]
+      - StaticText "AI"
+      - generic
+        - heading "Summarize PDF" [level=3, ref=e198]
+        - paragraph
+          - StaticText "Get AI-powered summaries of your documents"
+      - StaticText "Open"
+    - button "AI Ask Questions Chat with your PDF using AI Open" [ref=e79]
+      - StaticText "AI"
+      - generic
+        - heading "Ask Questions" [level=3, ref=e199]
+        - paragraph
+          - StaticText "Chat with your PDF using AI"
+      - StaticText "Open"
+    - button "AI Translate PDF Translate documents to any language Open" [ref=e80]
+      - StaticText "AI"
+      - generic
+        - heading "Translate PDF" [level=3, ref=e200]
+        - paragraph
+          - StaticText "Translate documents to any language"
+      - StaticText "Open"
+    - button "AI NEW Rewrite Content Rewrite and improve document text Open" [ref=e81]
+      - generic
+        - StaticText "AI"
+        - StaticText "NEW"
+      - generic
+        - heading "Rewrite Content" [level=3, ref=e201]
+        - paragraph
+          - StaticText "Rewrite and improve document text"
+      - StaticText "Open"
+    - button "AI NEW Explain Legal Docs AI-powered legal document analysis Open" [ref=e82]
+      - generic
+        - StaticText "AI"
+        - StaticText "NEW"
+      - generic
+        - heading "Explain Legal Docs" [level=3, ref=e202]
+        - paragraph
+          - StaticText "AI-powered legal document analysis"
+      - StaticText "Open"
+    - button "AI NEW Explain Medical Reports Understand medical reports with AI Open" [ref=e83]
+      - generic
+        - StaticText "AI"
+        - StaticText "NEW"
+      - generic
+        - heading "Explain Medical Reports" [level=3, ref=e203]
+        - paragraph
+          - StaticText "Understand medical reports with AI"
+      - StaticText "Open"
+    - button "AI Generate Notes Create study notes from documents Open" [ref=e84]
+      - StaticText "AI"
+      - generic
+        - heading "Generate Notes" [level=3, ref=e204]
+        - paragraph
+          - StaticText "Create study notes from documents"
+      - StaticText "Open"
+    - button "AI NEW Create Flashcards Auto-generate flashcards for studying Open" [ref=e85]
+      - generic
+        - StaticText "AI"
+        - StaticText "NEW"
+      - generic
+        - heading "Create Flashcards" [level=3, ref=e205]
+        - paragraph
+          - StaticText "Auto-generate flashcards for studying"
+      - StaticText "Open"
+    - button "AI Extract Tables AI-powered table extraction from PDFs Open" [ref=e86]
+      - StaticText "AI"
+      - generic
+        - heading "Extract Tables" [level=3, ref=e206]
+        - paragraph
+          - StaticText "AI-powered table extraction from PDFs"
+      - StaticText "Open"
+    - button "AI Extract Key Points Identify and extract main points Open" [ref=e87]
+      - StaticText "AI"
+      - generic
+        - heading "Extract Key Points" [level=3, ref=e207]
+        - paragraph
+          - StaticText "Identify and extract main points"
+      - StaticText "Open"
+  - generic
+    - heading "Editing" [level=2, ref=e88]
+    - paragraph
+      - StaticText "Edit and annotate your PDF documents"
+    - StaticText "8"
+    - StaticText " tool"
+    - StaticText "s"
+    - button "PRO Edit Text Modify text directly in your PDF Open" [ref=e89]
+      - StaticText "PRO"
+      - generic
+        - heading "Edit Text" [level=3, ref=e208]
+        - paragraph
+          - StaticText "Modify text directly in your PDF"
+      - StaticText "Open"
+    - button "PRO Edit Images Add, remove, or modify images Open" [ref=e90]
+      - StaticText "PRO"
+      - generic
+        - heading "Edit Images" [level=3, ref=e209]
+        - paragraph
+          - StaticText "Add, remove, or modify images"
+      - StaticText "Open"
+    - button "NEW Add Signature Sign documents electronically Open" [ref=e91]
+      - StaticText "NEW"
+      - generic
+        - heading "Add Signature" [level=3, ref=e210]
+        - paragraph
+          - StaticText "Sign documents electronically"
+      - StaticText "Open"
+    - button "PRO Fill Forms Fill in interactive PDF forms Open" [ref=e92]
+      - StaticText "PRO"
+      - generic
+        - heading "Fill Forms" [level=3, ref=e211]
+        - paragraph
+          - StaticText "Fill in interactive PDF forms"
+      - StaticText "Open"
+    - button "NEW Create Forms Design interactive PDF forms Open" [ref=e93]
+      - StaticText "NEW"
+      - generic
+        - heading "Create Forms" [level=3, ref=e212]
+        - paragraph
+          - StaticText "Design interactive PDF forms"
+      - StaticText "Open"
+    - button "PRO Highlight Highlight important text passages Open" [ref=e94]
+      - StaticText "PRO"
+      - generic
+        - heading "Highlight" [level=3, ref=e213]
+        - paragraph
+          - StaticText "Highlight important text passages"
+      - StaticText "Open"
+    - button "PRO Annotate Add comments and annotations Open" [ref=e95]
+      - StaticText "PRO"
+      - generic
+        - heading "Annotate" [level=3, ref=e214]
+        - paragraph
+          - StaticText "Add comments and annotations"
+      - StaticText "Open"
+    - button "PRO Redact Sensitive Data Permanently remove sensitive information Open" [ref=e96]
+      - StaticText "PRO"
+      - generic
+        - heading "Redact Sensitive Data" [level=3, ref=e215]
+        - paragraph
+          - StaticText "Permanently remove sensitive information"
+      - StaticText "Open"
+  - generic
+    - heading "Security" [level=2, ref=e97]
+    - paragraph
+      - StaticText "Protect and secure your PDF documents"
+    - StaticText "6"
+    - StaticText " tool"
+    - StaticText "s"
+    - button "PRO Password Protect Add password protection to PDFs Open" [ref=e98]
+      - StaticText "PRO"
+      - generic
+        - heading "Password Protect" [level=3, ref=e216]
+        - paragraph
+          - StaticText "Add password protection to PDFs"
+      - StaticText "Open"
+    - button "PRO Remove Password Unlock password-protected PDFs Open" [ref=e99]
+      - StaticText "PRO"
+      - generic
+        - heading "Remove Password" [level=3, ref=e217]
+        - paragraph
+          - StaticText "Unlock password-protected PDFs"
+      - StaticText "Open"
+    - button "PRO Encrypt PDF Apply AES-256 encryption Open" [ref=e100]
+      - StaticText "PRO"
+      - generic
+        - heading "Encrypt PDF" [level=3, ref=e218]
+        - paragraph
+          - StaticText "Apply AES-256 encryption"
+      - StaticText "Open"
+    - button "PRO Decrypt PDF Remove encryption from PDFs Open" [ref=e101]
+      - StaticText "PRO"
+      - generic
+        - heading "Decrypt PDF" [level=3, ref=e219]
+        - paragraph
+          - StaticText "Remove encryption from PDFs"
+      - StaticText "Open"
+    - button "PRO Permission Control Control printing, copying, and editing Open" [ref=e102]
+      - StaticText "PRO"
+      - generic
+        - heading "Permission Control" [level=3, ref=e220]
+        - paragraph
+          - StaticText "Control printing, copying, and editing"
+      - StaticText "Open"
+    - button "NEW Digital Signature Add certified digital signatures Open" [ref=e103]
+      - StaticText "NEW"
+      - generic
+        - heading "Digital Signature" [level=3, ref=e221]
+        - paragraph
+          - StaticText "Add certified digital signatures"
+      - StaticText "Open"
+  - generic
+    - heading "Developer Tools" [level=2, ref=e104]
+    - paragraph
+      - StaticText "APIs and automation for developers"
+    - StaticText "4"
+    - StaticText " tool"
+    - StaticText "s"
+    - button "PRO PDF API RESTful API for PDF operations Open" [ref=e105]
+      - StaticText "PRO"
+      - generic
+        - heading "PDF API" [level=3, ref=e222]
+        - paragraph
+          - StaticText "RESTful API for PDF operations"
+      - StaticText "Open"
+    - button "PRO Batch Processing Process hundreds of PDFs at once Open" [ref=e106]
+      - StaticText "PRO"
+      - generic
+        - heading "Batch Processing" [level=3, ref=e223]
+        - paragraph
+          - StaticText "Process hundreds of PDFs at once"
+      - StaticText "Open"
+    - button "NEW Automation Set up automated PDF workflows Open" [ref=e107]
+      - StaticText "NEW"
+      - generic
+        - heading "Automation" [level=3, ref=e224]
+        - paragraph
+          - StaticText "Set up automated PDF workflows"
+      - StaticText "Open"
+    - button "PRO Cloud Storage Connect Google Drive, Dropbox, and more Open" [ref=e108]
+      - StaticText "PRO"
+      - generic
+        - heading "Cloud Storage" [level=3, ref=e225]
+        - paragraph
+          - StaticText "Connect Google Drive, Dropbox, and more"
+      - StaticText "Open"
+  - generic
+    - generic
+    - heading "Loved by Millions Worldwide" [level=2, ref=e25]
+    - paragraph
+      - StaticText "See why professionals and businesses choose PDFPro AI for their document workflows"
+    - generic
+      - paragraph
+        - StaticText "“PDFPro AI saved our team hours every week. The merge and compress tools are incredibly fast and the results are always perfect.”"
+      - StaticText "SC"
+      - paragraph
+        - StaticText "Sarah Chen"
+      - paragraph
+        - StaticText "Product Manager at TechFlow"
+    - generic
+      - paragraph
+        - StaticText "“I switched from Adobe Acrobat and haven't looked back. The AI summarizer is a game-changer for reviewing client briefs quickly.”"
+      - StaticText "MJ"
+      - paragraph
+        - StaticText "Marcus Johnson"
+      - paragraph
+        - StaticText "Freelance Designer at Self-employed"
+    - generic
+      - paragraph
+        - StaticText "“The security features give me confidence to handle sensitive client documents. Enterprise-grade protection in a beautifully simple tool.”"
+      - StaticText "PS"
+      - paragraph
+        - StaticText "Priya Sharma"
+      - paragraph
+        - StaticText "Legal Consultant at Sharma & Associates"
+  - generic
+    - paragraph
+      - StaticText "Free users see ads & watermarks"
+    - paragraph
+      - StaticText "Upgrade for a clean, unlimited experience"
+    - list
+      - listitem [level=1]
+        - StaticText "No watermarks on any output"
+      - listitem [level=1]
+        - StaticText "Unlimited file processing"
+      - listitem [level=1]
+        - StaticText "All 100+ tools unlocked"
+    - button "Get Premium" [ref=e26]
+    - button "Dismiss" [ref=e27]
+  - heading "Why Choose PDFPro AI?" [level=2, ref=e28]
+  - paragraph
+    - StaticText "Built for professionals who demand the best. Every feature designed to save you time, keep your data safe, and deliver results that exceed expectations."
+  - generic
+    - heading "Lightning Fast" [level=3, ref=e109]
+    - paragraph
+      - StaticText "Process PDFs in seconds, not minutes. Our optimized engine handles even the largest documents with blazing speed."
+    - button "Processing speeds up to 10x faster" [ref=e110]
+  - generic
+    - heading "Military-Grade Security" [level=3, ref=e111]
+    - paragraph
+      - StaticText "Files are encrypted with AES-256 and automatically deleted after processing. Your data never leaves our secure servers."
+    - button "SOC 2 Type II compliant infrastructure" [ref=e112]
+  - generic
+    - heading "AI-Powered" [level=3, ref=e113]
+    - paragraph
+      - StaticText "Smart document understanding with AI. Summarize, translate, extract data, and chat with your PDFs like never before."
+    - button "Advanced NLP models for document AI" [ref=e114]
+  - generic
+    - heading "No Installation" [level=3, ref=e115]
+    - paragraph
+      - StaticText "Works in any modern browser on any device. No downloads, no plugins, no setup — just open and start working."
+    - button "Compatible with Chrome, Firefox, Safari, Edge" [ref=e116]
+  - generic
+    - heading "Batch Processing" [level=3, ref=e117]
+    - paragraph
+      - StaticText "Handle hundreds of files at once. Upload a batch and let our engine process them all simultaneously in the cloud."
+    - button "Process up to 500 files in a single batch" [ref=e118]
+  - generic
+    - heading "API Access" [level=3, ref=e119]
+    - paragraph
+      - StaticText "Integrate PDFPro AI into your workflow with our RESTful API. Full documentation and SDKs for all major languages."
+    - button "SDKs for Python, Node.js, Java, Go, and more" [ref=e120]
+  - heading "Simple, Transparent Pricing" [level=2, ref=e29]
+  - paragraph
+    - StaticText "Start free, upgrade when you need more power. No hidden fees, cancel anytime."
+  - generic
+    - button "Monthly" [ref=e121]
+    - switch [checked=false, ref=e122]
+    - button "Yearly" [ref=e123]
+  - generic
+    - heading "Free" [level=3, ref=e124]
+    - paragraph
+      - StaticText "Perfect for occasional PDF tasks"
+    - StaticText "Free"
+    - button "Get Started" [ref=e125]
+    - list
+      - listitem [level=1]
+        - StaticText "Basic PDF tools"
+      - listitem [level=1]
+        - StaticText "Daily usage limit"
+        - StaticText "5 tasks/day"
+      - listitem [level=1]
+        - StaticText "File size limit"
+        - StaticText "10 MB"
+      - listitem [level=1]
+        - StaticText "No ads"
+      - listitem [level=1]
+        - StaticText "AI-powered tools"
+      - listitem [level=1]
+        - StaticText "Batch processing"
+      - listitem [level=1]
+        - StaticText "Faster processing"
+      - listitem [level=1]
+        - StaticText "API access"
+      - listitem [level=1]
+        - StaticText "Team accounts"
+      - listitem [level=1]
+        - StaticText "White-label branding"
+      - listitem [level=1]
+        - StaticText "Priority support"
+      - listitem [level=1]
+        - StaticText "Custom integrations"
+  - generic
+    - StaticText "MOST POPULAR"
+    - heading "Premium" [level=3, ref=e126]
+    - paragraph
+      - StaticText "For power users and professionals"
+    - StaticText "$"
+    - StaticText "9.99"
+    - StaticText "/month"
+    - button "Upgrade to Premium" [ref=e127]
+    - list
+      - listitem [level=1]
+        - StaticText "Basic PDF tools"
+      - listitem [level=1]
+        - StaticText "Daily usage limit"
+        - StaticText "Unlimited"
+      - listitem [level=1]
+        - StaticText "File size limit"
+        - StaticText "100 MB"
+      - listitem [level=1]
+        - StaticText "No ads"
+      - listitem [level=1]
+        - StaticText "AI-powered tools"
+      - listitem [level=1]
+        - StaticText "Batch processing"
+      - listitem [level=1]
+        - StaticText "Faster processing"
+      - listitem [level=1]
+        - StaticText "API access"
+      - listitem [level=1]
+        - StaticText "Team accounts"
+      - listitem [level=1]
+        - StaticText "White-label branding"
+      - listitem [level=1]
+        - StaticText "Priority support"
+      - listitem [level=1]
+        - StaticText "Custom integrations"
+  - generic
+    - heading "Business" [level=3, ref=e128]
+    - paragraph
+      - StaticText "For teams and enterprises"
+    - StaticText "$"
+    - StaticText "29.99"
+    - StaticText "/month"
+    - button "Contact Sales" [ref=e129]
+    - list
+      - listitem [level=1]
+        - StaticText "Basic PDF tools"
+      - listitem [level=1]
+        - StaticText "Daily usage limit"
+        - StaticText "Unlimited"
+      - listitem [level=1]
+        - StaticText "File size limit"
+        - StaticText "500 MB"
+      - listitem [level=1]
+        - StaticText "No ads"
+      - listitem [level=1]
+        - StaticText "AI-powered tools"
+      - listitem [level=1]
+        - StaticText "Batch processing"
+      - listitem [level=1]
+        - StaticText "Faster processing"
+      - listitem [level=1]
+        - StaticText "API access"
+      - listitem [level=1]
+        - StaticText "Team accounts"
+      - listitem [level=1]
+        - StaticText "White-label branding"
+      - listitem [level=1]
+        - StaticText "Priority support"
+      - listitem [level=1]
+        - StaticText "Custom integrations"
+  - StaticText "30-day money-back guarantee"
+  - StaticText "·"
+  - StaticText "No questions asked"
+  - heading "Full Feature Comparison" [level=3, ref=e30]
+  - table
+    - rowgroup
+      - row
+        - columnheader "Feature" [ref=e226]
+        - columnheader "Free" [ref=e227]
+        - columnheader "Premium" [ref=e228]
+          - StaticText "Premium"
+        - columnheader "Business" [ref=e229]
+    - row
+      - cell "Basic PDF tools" [ref=e151]
+      - cell
+      - cell
+      - cell
+    - row
+      - cell "Daily usage limit" [ref=e152]
+      - cell "5 tasks/day" [ref=e153]
+        - StaticText "5 tasks/day"
+      - cell "Unlimited" [ref=e154]
+        - StaticText "Unlimited"
+      - cell "Unlimited" [ref=e155]
+        - StaticText "Unlimited"
+    - row
+      - cell "File size limit" [ref=e156]
+      - cell "10 MB" [ref=e157]
+        - StaticText "10 MB"
+      - cell "100 MB" [ref=e158]
+        - StaticText "100 MB"
+      - cell "500 MB" [ref=e159]
+        - StaticText "500 MB"
+    - row
+      - cell "Advertisements" [ref=e160]
+      - cell
+      - cell
+      - cell
+    - row
+      - cell "AI-powered tools" [ref=e161]
+      - cell
+      - cell
+      - cell
+    - row
+      - cell "Batch processing" [ref=e162]
+      - cell
+      - cell
+      - cell
+    - row
+      - cell "Faster processing" [ref=e163]
+      - cell
+      - cell
+      - cell
+    - row
+      - cell "API access" [ref=e164]
+      - cell
+      - cell
+      - cell
+    - row
+      - cell "Team accounts" [ref=e165]
+      - cell
+      - cell
+      - cell
+    - row
+      - cell "White-label branding" [ref=e166]
+      - cell
+      - cell
+      - cell
+    - row
+      - cell "Priority support" [ref=e167]
+      - cell
+      - cell
+      - cell
+    - row
+      - cell "Custom integrations" [ref=e168]
+      - cell
+      - cell
+      - cell
+  - generic
+    - paragraph
+      - StaticText "Go Premium — Remove all watermarks & ads"
+    - button "Upgrade Now" [ref=e31]
+    - button "Dismiss" [ref=e32]
+  - heading "Frequently Asked Questions" [level=2, ref=e33]
+  - paragraph
+    - StaticText "Everything you need to know about PDFPro AI"
+  - heading "How secure are my uploaded PDF files?" [level=3, ref=e34]
+    - button "How secure are my uploaded PDF files?" [expanded=false, ref=e130]
+      - StaticText "How secure are my uploaded PDF files?"
+  - heading "How fast are the AI-powered tools?" [level=3, ref=e35]
+    - button "How fast are the AI-powered tools?" [expanded=false, ref=e131]
+      - StaticText "How fast are the AI-powered tools?"
+  - heading "What are the free plan limits?" [level=3, ref=e36]
+    - button "What are the free plan limits?" [expanded=false, ref=e132]
+      - StaticText "What are the free plan limits?"
+  - heading "What do I get with Premium?" [level=3, ref=e37]
+    - button "What do I get with Premium?" [expanded=false, ref=e133]
+      - StaticText "What do I get with Premium?"
+  - heading "Will my file quality be affected by compression or conversion?" [level=3, ref=e38]
+    - button "Will my file quality be affected by compression or conversion?" [expanded=false, ref=e134]
+      - StaticText "Will my file quality be affected by compression or conversion?"
+  - generic
+    - heading "Still have questions?" [level=3, ref=e135]
+    - paragraph
+      - StaticText "Can't find what you're looking for? We're here to help."
+    - button "Contact Support" [ref=e136]
+    - link "support@pdfpro.ai" [ref=e137]
+  - generic
+    - generic
+    - StaticText "No credit card required"
+    - heading "Ready to Simplify YourPDF Workflow?" [level=2, ref=e138]
+      - StaticText "Ready to Simplify YourPDF Workflow?"
+    - paragraph
+      - StaticText "Join 2 million+ users who trust PDFPro AI for their document needs."
+    - button "Get Started Free" [ref=e139]
+    - button "View All Tools" [ref=e140]
+    - StaticText "🔒"
+    - StaticText "Bank-level encryption"
+    - StaticText "⚡"
+    - StaticText "Process in seconds"
+    - StaticText "♻️"
+    - StaticText "Auto-delete after 2 hours"
+- contentinfo
+  - button "PDF PDFPro AI" [ref=e7]
+    - StaticText "PDF"
+    - StaticText "PDFPro"
+    - StaticText "AI"
+  - paragraph
+    - StaticText "The most complete AI-powered PDF platform. Secure, fast, and free to get started."
+  - link "Twitter" [ref=e8]
+    - image
+  - link "GitHub" [ref=e9]
+    - image
+  - link "Email" [ref=e10]
+  - heading "Products" [level=4, ref=e11]
+  - list
+    - listitem [level=1]
+      - button "PDF Essentials" [ref=e141]
+    - listitem [level=1]
+      - button "Conversion" [ref=e142]
+    - listitem [level=1]
+      - button "OCR" [ref=e143]
+    - listitem [level=1]
+      - button "AI Features" [ref=e144]
+    - listitem [level=1]
+      - button "Editing" [ref=e145]
+  - heading "Company" [level=4, ref=e12]
+  - list
+    - listitem [level=1]
+      - link "Contact Support" [ref=e146]
+    - listitem [level=1]
+      - link "About Us" [ref=e147]
+  - heading "Legal" [level=4, ref=e13]
+  - list
+    - listitem [level=1]
+      - button "Privacy Policy" [ref=e148]
+    - listitem [level=1]
+      - button "Terms of Service" [ref=e149]
+  - heading "Stay up to date" [level=4, ref=e14]
+  - paragraph
+    - StaticText "Get the latest updates, tips, and product news."
+  - form
+    - textbox "Enter your email" [required, ref=e150]
+    - button "Subscribe" [ref=e39]
+  - paragraph
+    - StaticText "© 2026 PDFPro AI. All rights reserved."
+  - button "English" [ref=e15]
+    - StaticText "English"
+  - StaticText "Made with"
+  - StaticText "for productivity"
+- region "Notifications alt+T" [ref=e1]
+- button "Open Next.js Dev Tools" [expanded=false, ref=e169]
+  - image
+- alert
