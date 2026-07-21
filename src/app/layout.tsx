@@ -16,17 +16,46 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PDFPro AI - The Most Complete AI-Powered PDF Platform | 100+ Tools",
-  description: "Merge, split, compress, convert, edit, and AI-analyze your PDFs. 100+ free and premium tools in one platform. No signup required.",
-  keywords: ["PDF", "PDF tools", "merge PDF", "split PDF", "compress PDF", "PDF to Word", "AI PDF", "PDF editor", "online PDF"],
-  authors: [{ name: "PDFPro AI" }],
+  metadataBase: new URL('https://pdfproai-privacy.vercel.app'),
+  title: {
+    default: 'PDFPro AI - Free Online PDF Merger, Compressor & AI Tools',
+    template: '%s | PDFPro AI',
+  },
+  description: 'Every PDF tool you will ever need, powered by AI. Merge, compress, convert, edit, and translate documents instantly in your browser with no installation required.',
+  keywords: [
+    'free pdf compressor',
+    'merge pdf online',
+    'ai pdf summarizer',
+    'convert pdf to word free',
+    'online pdf tools no sign up',
+    'compress pdf under 10mb',
+  ],
+  authors: [{ name: 'PDFPro AI' }],
   icons: {
-    icon: "/logo.svg",
+    icon: '/logo.svg',
   },
   openGraph: {
-    title: "PDFPro AI - 100+ PDF Tools, One Platform",
-    description: "The most complete AI-powered PDF platform. Every tool you'll ever need.",
-    type: "website",
+    title: 'PDFPro AI - The AI-Powered PDF Platform',
+    description: 'Merge, compress, convert, edit & transform your documents in seconds for free.',
+    url: 'https://pdfproai-privacy.vercel.app',
+    siteName: 'PDFPro AI',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'PDFPro AI - Free Online PDF Platform',
+    description: 'Merge, compress, convert, and edit PDFs with cutting-edge AI.',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
   },
 };
 
