@@ -13,6 +13,7 @@ import { StatsBanner } from '@/components/landing/stats-banner';
 import { CTASection } from '@/components/landing/cta-section';
 import { Testimonials } from '@/components/landing/testimonials';
 import { LandingInterstitialAd } from '@/components/ads/landing-interstitial-ad';
+import { NativeBannerAd } from '@/components/ads/native-banner-ad';
 import { SectionAdBanner } from '@/components/ads/section-ad-banner';
 import { StickyAdBar } from '@/components/ads/sticky-ad-bar';
 import { ProcessingAdOverlay } from '@/components/ads/processing-ad-overlay';
@@ -129,6 +130,7 @@ function LandingPage() {
     >
       <Hero />
       <StatsBanner />
+      <NativeBannerAd />
       {/* Ad placement: between Stats and Tools Grid */}
       <SectionAdBanner variant="compact" />
       <ToolsGrid />
